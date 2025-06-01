@@ -7,7 +7,7 @@ local ventures = 3
 local tripsToDo = 3
 
 local oreCheckTimer = 0
-print("version 2a5")
+print("version 2a6")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -117,6 +117,19 @@ function detectNearbyOreWorld()
       return ok, data
     end
   })
+
+    -- Back
+    table.insert(checks, {
+        vec = worldDirs[(dir + 2) % 4],
+        check = function()
+        turtle.turnLeft()
+        turtle.turnLeft()
+        local ok, data = turtle.inspect()
+        turtle.turnRight()
+        turtle.turnRight()
+        return ok, data
+        end
+    })
 
   -- Right
   table.insert(checks, {
@@ -255,7 +268,7 @@ moveOrMineVecAvoid = function(dirVec, preferLevel)
     end
   end
 
-  print("All bypass attempts failed for", dirVec.x, dirVec.y, dirVec.z)
+  --print("All bypass attempts failed for", dirVec.x, dirVec.y, dirVec.z)
   return false
 end
 
