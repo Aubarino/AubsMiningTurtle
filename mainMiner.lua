@@ -189,7 +189,7 @@ end
 local function returnToOrigin()
   print("Returning to origin...")
 
-    while(pos.x ~= 0 and pos.y ~= 0 and pos.z ~= 0)
+    while(pos.x ~= 0 and pos.y ~= 0 and pos.z ~= 0) do
         print("Retrying X...")
         while pos.x ~= 0 do
             local step = (pos.x > 0) and -1 or 1
