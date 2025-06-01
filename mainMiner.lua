@@ -275,7 +275,7 @@ end
 for ventureCurrent = 0, ventures do
     moveOrMineVecAvoid({x=0, y=-1, z=0})
     local zOffsetGoal = ((math.random() * 2) - 1)
-    print(zOffsetGoal + " z")
+    print(zOffsetGoal .. " z")
     for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
         if not moveOrMineVecAvoid({x=0, y=0, z=zOffsetGoal}) then
             print("Failed moving forward at step " .. i)
@@ -284,7 +284,7 @@ for ventureCurrent = 0, ventures do
     end
 
     local xOffsetGoal = ((math.random() * 2) - 1)
-    print(xOffsetGoal + " x")
+    print(xOffsetGoal .. " x")
     for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
         if not moveOrMineVecAvoid({x=zOffsetGoal, y=0, z=0}) then
             print("Failed moving forward at step " .. i)
