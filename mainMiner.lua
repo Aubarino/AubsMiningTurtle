@@ -6,7 +6,7 @@ local downOffset = 16
 local ventures = 3
 
 local oreCheckTimer = 0
-print("version 2a2")
+print("version 2a3")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -295,6 +295,17 @@ function faceNorth()
   print("Now facing North")
 end
 
+local function mineOreAttempt(directionIn)
+    oreCheckTimer = oreCheckTimer + 1
+    if (oreCheckTimer >= 2) then
+        local outDir = detectNearbyOreWorld()
+        if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
+            moveOrMineVecAvoid(outDir);
+        end
+        oreCheckTimer = 0
+    end
+end
+
 -- Return to origin (clean and reliable)
 local function returnToOrigin()
   print("Returning to origin...")
@@ -340,17 +351,6 @@ local function returnToOrigin()
 
     faceNorth()
   print("Back! :)")
-end
-
-local function mineOreAttempt(directionIn)
-    oreCheckTimer = oreCheckTimer + 1
-    if (oreCheckTimer >= 2) then
-        local outDir = detectNearbyOreWorld()
-        if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
-            moveOrMineVecAvoid(outDir);
-        end
-        oreCheckTimer = 0
-    end
 end
 
 -- MAIN MINING THING
