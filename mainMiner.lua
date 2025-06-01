@@ -100,12 +100,10 @@ local function randomMove()
     {x=0, y=-1, z=0},  -- down
   }
 
-  -- Pick a random index
   local idx = math.random(#directions)
   local dirVec = directions[idx]
 
-  -- Use your existing moveOrMineVecAvoid to try move
-  if this.moveOrMineVecAvoid(dirVec) then
+  if moveOrMineVecAvoid({x = dirVec.x,y = dirVec.y, z = dirVec.z}) then
     print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
     return true
   else
