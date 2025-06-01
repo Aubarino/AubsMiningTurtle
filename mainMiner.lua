@@ -235,28 +235,40 @@ end
 local function returnToOrigin()
   print("Returning to origin...")
 
-  while pos.x ~= 0 or pos.z ~= 0 or pos.y ~= 0 do
-    if pos.x ~= 0 then
-      local step = (pos.x > 0) and -1 or 1
-      if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
-        print("Blocked on X axis")
-        sleep(0.1)
-      end
-    elseif pos.z ~= 0 then
-      local step = (pos.z > 0) and -1 or 1
-      if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
-        print("Blocked on Z axis")
-        sleep(0.1)
-      end
+    moveOrMineVecAvoid({x=0, y=1, z=0})
+
+    while pos.x ~= 0 do
+        local step = (pos.x > 0) and -1 or 1
+        if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
+            print("Blocked on X axis")
+            sleep(0.05)
     end
-    if pos.y ~= 0 then
-      local step = (pos.y > 0) and -1 or 1
-      if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
-        print("Blocked on Y axis")
-        sleep(0.1)
-      end
+    while pos.z ~= 0 do
+        local step = (pos.z > 0) and -1 or 1
+        if not moveOrMineVecAvoid({x=, y=0, z=step}, true) then
+            print("Blocked on Z axis")
+            sleep(0.05)
     end
-  end
+
+    while pos.x ~= 0 or pos.z ~= 0 or pos.y ~= 0 do
+        if pos.x ~= 0 then
+            local step = (pos.x > 0) and -1 or 1
+            if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
+                print("Blocked on X axis")
+        end
+        elseif pos.z ~= 0 then
+            local step = (pos.z > 0) and -1 or 1
+            if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
+                print("Blocked on Z axis")
+            end
+        end
+        if pos.y ~= 0 then
+            local step = (pos.y > 0) and -1 or 1
+            if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
+                print("Blocked on Y axis")
+            end
+        end
+    end
 
     faceNorth()
   print("Back! :)")
