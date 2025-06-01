@@ -1,6 +1,9 @@
 -- Position and direction tracking
 local pos = { x = 0, y = 0, z = 0 }
 local dir = 0 -- 0=north, 1=east, 2=south, 3=west
+local maxDistance = 16
+local downOffset = 45
+local ventures = 3
 
 -- Attempt to refuel from inventory if needed
 local function tryRefuel()
@@ -256,18 +259,29 @@ end
 
 print("Starting mining operation...")
 
-for i = 1, 4 do
-  if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
-    print("Failed mining down at step " .. i)
-    break
-  end
+for i = 1, (downOffset + math.random(3)) - 1 do
+    if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
+        print("Failed mining down at step " .. i)
+        break
+    end
 end
+for ventureCurrent = 0, ventures do
+    moveOrMineVecAvoid({x=0, y=-1, z=0})
+    local zOffsetGoal = ((math.clamp(math.random(),0,1) * 2) - 1)
+    for i = 1, math.clamp((math.random(maxDistance) + 1) - pos.z,0,999) do
+        if not moveOrMineVecAvoid({x=0, y=0, z=zOffsetGoal}) then
+            print("Failed moving forward at step " .. i)
+            break
+        end
+    end
 
-for i = 1, 2 do
-  if not moveOrMineVecAvoid({x=0, y=0, z=1}) then
-    print("Failed moving forward at step " .. i)
-    break
-  end
+    local xOffsetGoal = ((math.clamp(math.random(),0,1) * 2) - 1)
+    for i = 1, math.clamp((math.random(maxDistance) + 1) - pos.x,0,999) do
+        if not moveOrMineVecAvoid({x=zOffsetGoal, y=0, z=0}) then
+            print("Failed moving forward at step " .. i)
+            break
+        end
+    end
 end
 
 returnToOrigin()
