@@ -188,17 +188,17 @@ end
 -- Return to origin
 local function returnToOrigin()
   print("Returning to origin...")
-
-    while(pos.x ~= 0 and pos.y ~= 0 and pos.z ~= 0) do
+--
+    while (pos.x ~= 0 and pos.y ~= 0 and pos.z ~= 0) do
         print("Retrying X...")
-        while pos.x ~= 0 do
+        while (pos.x ~= 0) do
             local step = (pos.x > 0) and -1 or 1
             if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
             end
         end
 
         print("Retrying Z...")
-        while pos.z ~= 0 do
+        while (pos.z ~= 0) do
             local step = (pos.z > 0) and -1 or 1
             if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
             end
