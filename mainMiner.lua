@@ -71,7 +71,7 @@ local function isBlockUnbreakable(directionVector)
   -- Check tags for unbreakable flag
   if data.tags then
     for _, tag in ipairs(data.tags) do
-      if tag == "minecraft:unbreakable" or tag == "unbreakable" then
+      if tag == "minecraft:unbreakable" or tag == "unbreakable" and tag != "minecraft:air" then
         return true
       end
     end
@@ -104,26 +104,23 @@ moveOrMineVecAvoid = function(dirVec)
   local function tryMove(dVec)
     if isBlockUnbreakable(dVec) then
 
-        randomMove = function()
-            local directions = {
-                {x=1, y=0, z=0}, {x=-1, y=0, z=0},
-                {x=0, y=0, z=1}, {x=0, y=0, z=-1},
-                {x=0, y=1, z=0}, {x=0, y=-1, z=0}
-            }
+        local directions = {
+            {x=1, y=0, z=0}, {x=-1, y=0, z=0},
+            {x=0, y=0, z=1}, {x=0, y=0, z=-1},
+            {x=0, y=1, z=0}, {x=0, y=-1, z=0}
+        }
 
-            local idx = math.random(#directions)
-            dirVec = directions[idx]
+        local idx = math.random(#directions)
+        dirVec = directions[idx]
 
-            if moveOrMineVecAvoid(dirVec) then
-                print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
-                return true
-            else
-                print("Random move blocked")
-                return false
-            end
+        if moveOrMineVecAvoid(dirVec) then
+            print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
+            return true
+        else
+            print("Random move blocked")
+            return false
         end
-        randomMove()
-      return false
+        return false
     end
 
     local success = false
