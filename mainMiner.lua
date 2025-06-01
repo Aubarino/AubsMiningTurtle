@@ -5,15 +5,16 @@ local origin = { x = 0, y = 0, z = 0 }
 local function tryRefuel()
   for slot = 1, 16 do
     turtle.select(slot)
-    if turtle.getFuelLevel() == "unlimited" then
-      break
-    end
-    if turtle.refuel(1) then
-      print("Refueled with item in slot " .. slot)
-      return true
+    local item = turtle.getItemDetail()
+    if item then
+      print("Checking slot " .. slot .. ": " .. item.name)
+      if turtle.refuel(1) then
+        print("Refueled using " .. item.name .. " from slot " .. slot)
+        return true
+      end
     end
   end
-  print("Could not refuel. Insert fuel into inventory.")
+  print("No usable fuel found. Insert coal or other fuel.")
   return false
 end
 
