@@ -71,7 +71,7 @@ local function isBlockUnbreakable(directionVector)
   -- Check tags for unbreakable flag
   if data.tags then
     for _, tag in ipairs(data.tags) do
-      if tag == "minecraft:unbreakable" or tag == "unbreakable" and tag != "minecraft:air" then
+      if ((tag == "minecraft:unbreakable" or tag == "unbreakable") and not tag == "minecraft:air") then
         return true
       end
     end
