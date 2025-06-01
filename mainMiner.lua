@@ -185,6 +185,41 @@ moveOrMineVecAvoid = function(dirVec, preferLevel)
   return false
 end
 
+function dropNonFuelItemsIntoChest()
+  for slot = 1, 16 do
+    if turtle.getItemCount(slot) > 0 then
+      turtle.select(slot)
+      local isFuel = turtle.refuel(0) -- check without consuming
+      if not isFuel then
+        local item = turtle.getItemDetail(slot)
+        local before = item.count
+        if turtle.drop() then
+          local afterDetail = turtle.getItemDetail(slot)
+          local after = afterDetail and afterDetail.count or 0
+          if after < before then
+            print("Dropped " .. (before - after) .. " of " .. item.name)
+          else
+            print("Chest could not accept: " .. item.name)
+          end
+        else
+          print("Drop failed for: " .. item.name)
+        end
+      else
+        local item = turtle.getItemDetail(slot)
+        print("Kept fuel item: " .. item.name)
+      end
+    end
+  end
+  turtle.select(1)
+end
+
+function faceNorth()
+  while dir ~= 0 do
+    turtle.turnLeft()
+    dir = (dir - 1) % 4
+  end
+  print("Now facing North")
+end
 
 -- Return to origin (clean and reliable)
 local function returnToOrigin()
@@ -213,6 +248,7 @@ local function returnToOrigin()
     end
   end
 
+    faceNorth()
   print("Back! :)")
 end
 
@@ -235,5 +271,6 @@ for i = 1, 2 do
 end
 
 returnToOrigin()
+dropNonFuelItemsIntoChest()
 
 print("Done :)")
