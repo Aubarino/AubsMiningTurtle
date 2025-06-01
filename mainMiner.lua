@@ -204,18 +204,18 @@ local function returnToOrigin()
             end
         end
 
-        if (pos.y ~= 0)
+        if (pos.y ~= 0) then
             local step = (pos.y > 0) and -1 or 1
             if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
                 print("Going in Y...")
             end
 
-            if (pos.x ~= 0)
+            if (pos.x ~= 0) then
                 local step = (pos.x > 0) and -1 or 1
                 if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
                 end
             end
-            if (pos.z ~= 0)
+            if (pos.z ~= 0) then
                 local step = (pos.z > 0) and -1 or 1
                 if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
                 end
