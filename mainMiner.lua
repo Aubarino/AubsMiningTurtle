@@ -4,9 +4,10 @@ local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
 local downOffset = 16
 local ventures = 3
+local tripsToDo = 3
 
 local oreCheckTimer = 0
-print("version 2a4")
+print("version 2a5")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -300,6 +301,12 @@ local function mineOreAttempt(directionIn)
         local outDir = detectNearbyOreWorld()
         if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
             moveOrMineVecAvoid(outDir);
+            while(outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) do
+                outDir = detectNearbyOreWorld()
+                if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
+                    moveOrMineVecAvoid(outDir)
+                end
+            end
         end
         oreCheckTimer = 0
     end
@@ -356,38 +363,42 @@ end
 
 print("Starting mining operation...")
 
-local goalYto = (downOffset + math.random(3)) - 1
-for i = 1, goalYto do
-    mineOreAttempt()
-    if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
-        print("Failed mining down at step " .. i)
-        break
-    end
-end
-for ventureCurrent = 0, ventures do
-    moveOrMineVecAvoid({x=0, y=-1, z=0})
-    local zOffsetGoal = ((math.random() * 2) - 1)
-    print(tostring(zOffsetGoal) .. " z")
-    for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+while (tripsToDo > 0) do
+    local goalYto = (downOffset + math.random(3)) - 1
+    for i = 1, goalYto do
         mineOreAttempt()
-        if not moveOrMineVecAvoid({x=0, y=0, z=math.floor(zOffsetGoal)}) then
-            print("Failed step " .. i)
+        if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
+            --print("Failed mining down at step " .. i)
             break
         end
     end
+    for ventureCurrent = 0, ventures do
+        moveOrMineVecAvoid({x=0, y=-1, z=0})
+        local zOffsetGoal = ((math.random() * 2) - 1)
+        print(tostring(zOffsetGoal) .. " z")
+        for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+            mineOreAttempt()
+            if not moveOrMineVecAvoid({x=0, y=0, z=math.floor(zOffsetGoal)}) then
+                --print("Failed step " .. i)
+                break
+            end
+        end
 
-    local xOffsetGoal = ((math.random() * 2) - 1)
-    print(tostring(xOffsetGoal) .. " x")
-    for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
-        mineOreAttempt()
-        if not moveOrMineVecAvoid({x=math.floor(zOffsetGoal), y=0, z=0}) then
-            print("Failed step " .. i)
-            break
+        local xOffsetGoal = ((math.random() * 2) - 1)
+        print(tostring(xOffsetGoal) .. " x")
+        for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+            mineOreAttempt()
+            if not moveOrMineVecAvoid({x=math.floor(zOffsetGoal), y=0, z=0}) then
+                --print("Failed step " .. i)
+                break
+            end
         end
     end
-end
 
-returnToOrigin()
-dropNonFuelItemsIntoChest()
+    returnToOrigin()
+    dropNonFuelItemsIntoChest()
+    tripsToDo = tripsToDo - 1
+    print("Completed a trip!")
+end
 
 print("Done :)")
