@@ -92,7 +92,6 @@ end
 
 -- Forward declarations
 local moveOrMineVecAvoid
-local randomMove
 
 -- Dependencies assumed to exist:
 -- pos, dir, tryRefuel, isBlockUnbreakable, faceDirection, rightOf, leftOf, dirToVector
