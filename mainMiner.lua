@@ -5,7 +5,7 @@ local maxDistance = 16
 local downOffset = 45
 local ventures = 3
 
-function math.clamp(val, lower, upper)
+local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
     if lower > upper then lower, upper = upper, lower end -- swap if boundaries supplied the wrong way
     return math.max(lower, math.min(upper, val))
@@ -273,16 +273,16 @@ for i = 1, (downOffset + math.random(3)) - 1 do
 end
 for ventureCurrent = 0, ventures do
     moveOrMineVecAvoid({x=0, y=-1, z=0})
-    local zOffsetGoal = ((math.clamp(math.random(),0,1) * 2) - 1)
-    for i = 1, math.clamp((math.random(maxDistance) + 1) - pos.z,0,999) do
+    local zOffsetGoal = ((clamp(math.random(),0,1) * 2) - 1)
+    for i = 1, clamp((math.random(maxDistance) + 1) - pos.z,0,999) do
         if not moveOrMineVecAvoid({x=0, y=0, z=zOffsetGoal}) then
             print("Failed moving forward at step " .. i)
             break
         end
     end
 
-    local xOffsetGoal = ((math.clamp(math.random(),0,1) * 2) - 1)
-    for i = 1, math.clamp((math.random(maxDistance) + 1) - pos.x,0,999) do
+    local xOffsetGoal = ((clamp(math.random(),0,1) * 2) - 1)
+    for i = 1, clamp((math.random(maxDistance) + 1) - pos.x,0,999) do
         if not moveOrMineVecAvoid({x=zOffsetGoal, y=0, z=0}) then
             print("Failed moving forward at step " .. i)
             break
