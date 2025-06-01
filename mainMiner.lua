@@ -4,7 +4,7 @@ local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
 local downOffset = 16
 local ventures = 3
-print("version 1c2")
+print("version 2a")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -87,11 +87,86 @@ local function isBlockUnbreakable(directionVector)
   return false
 end
 
--- Assume these globals exist:
--- pos = {x=0, y=0, z=0}, dir = 0
--- helper functions: tryRefuel(), faceDirection(dir), rightOf(dir), leftOf(dir), dirToVector(dir)
+function detectNearbyOreWorld()
+  local checks = {}
 
--- Forward declaration
+  -- Uses `dir` as the turtle's current direction (0 = north, 1 = east, etc.)
+  local worldDirs = {
+    [0] = {x=0, y=0, z=-1},  -- North
+    [1] = {x=1, y=0, z=0},   -- East
+    [2] = {x=0, y=0, z=1},   -- South
+    [3] = {x=-1, y=0, z=0}   -- West
+  }
+
+  -- Forward (world-relative)
+  table.insert(checks, {
+    vec = worldDirs[dir],
+    check = function() return turtle.inspect() end
+  })
+
+  -- Left
+  table.insert(checks, {
+    vec = worldDirs[(dir + 3) % 4],
+    check = function()
+      turtle.turnLeft()
+      local ok, data = turtle.inspect()
+      turtle.turnRight()
+      return ok, data
+    end
+  })
+
+  -- Right
+  table.insert(checks, {
+    vec = worldDirs[(dir + 1) % 4],
+    check = function()
+      turtle.turnRight()
+      local ok, data = turtle.inspect()
+      turtle.turnLeft()
+      return ok, data
+    end
+  })
+
+  -- Back
+  table.insert(checks, {
+    vec = worldDirs[(dir + 2) % 4],
+    check = function()
+      turtle.turnLeft()
+      turtle.turnLeft()
+      local ok, data = turtle.inspect()
+      turtle.turnRight()
+      turtle.turnRight()
+      return ok, data
+    end
+  })
+
+  -- Up
+  table.insert(checks, {
+    vec = {x=0, y=1, z=0},
+    check = function() return turtle.inspectUp() end
+  })
+
+  -- Down
+  table.insert(checks, {
+    vec = {x=0, y=-1, z=0},
+    check = function() return turtle.inspectDown() end
+  })
+
+  -- Run all checks
+  for _, dir in ipairs(checks) do
+    local success, data = dir.check()
+    if success and data.tags then
+      for _, tag in ipairs(data.tags) do
+        if string.find(tag:lower(), "ore") then
+          print("Found ore block at world direction:", dir.vec.x, dir.vec.y, dir.vec.z)
+          return dir.vec
+        end
+      end
+    end
+  end
+
+  return {x=0, y=0, z=0} -- No ore found
+end
+
 local moveOrMineVecAvoid
 
 -- Main movement + avoidance function
@@ -238,6 +313,7 @@ local function returnToOrigin()
     moveOrMineVecAvoid({x=0, y=1, z=0})
 
     while pos.x ~= 0 do
+        mineOreAttempt()
         local step = (pos.x > 0) and -1 or 1
         if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
             print("Blocked on X axis")
@@ -245,6 +321,7 @@ local function returnToOrigin()
         end
     end
     while pos.z ~= 0 do
+        mineOreAttempt()
         local step = (pos.z > 0) and -1 or 1
         if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
             print("Blocked on Z axis")
@@ -276,12 +353,22 @@ local function returnToOrigin()
   print("Back! :)")
 end
 
+local function mineOreAttempt(directionIn)
+    if (math.random(10) > 7) then
+        local outDir = detectNearbyOreWorld()
+        if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
+            moveOrMineVecAvoid(outDir);
+        end
+    end
+end
+
 -- MAIN MINING THING
 
 print("Starting mining operation...")
 
 local goalYto = (downOffset + math.random(3)) - 1
 for i = 1, goalYto do
+    mineOreAttempt()
     if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
         print("Failed mining down at step " .. i)
         break
@@ -292,6 +379,7 @@ for ventureCurrent = 0, ventures do
     local zOffsetGoal = ((math.random() * 2) - 1)
     print(tostring(zOffsetGoal) .. " z")
     for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+        mineOreAttempt()
         if not moveOrMineVecAvoid({x=0, y=0, z=math.floor(zOffsetGoal)}) then
             print("Failed step " .. i)
             break
@@ -301,6 +389,7 @@ for ventureCurrent = 0, ventures do
     local xOffsetGoal = ((math.random() * 2) - 1)
     print(tostring(xOffsetGoal) .. " x")
     for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+        mineOreAttempt()
         if not moveOrMineVecAvoid({x=math.floor(zOffsetGoal), y=0, z=0}) then
             print("Failed step " .. i)
             break
