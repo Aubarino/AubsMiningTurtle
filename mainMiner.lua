@@ -6,7 +6,7 @@ local downOffset = 16
 local ventures = 3
 
 local oreCheckTimer = 0
-print("version 2a3")
+print("version 2a4")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -100,7 +100,7 @@ function detectNearbyOreWorld()
     [3] = {x=-1, y=0, z=0}   -- West
   }
 
-  -- Forward (world-relative)
+  -- Forward
   table.insert(checks, {
     vec = worldDirs[dir],
     check = function() return turtle.inspect() end
@@ -143,13 +143,12 @@ function detectNearbyOreWorld()
   -- Run all checks
   for _, dir in ipairs(checks) do
     local success, data = dir.check()
-    if success and data.tags then
-        for _, tag in ipairs(data.tags) do
-            if (tag == "c:ores") then
-                print("Found ore block at world direction:", dir.vec.x, dir.vec.y, dir.vec.z)
-                return dir.vec
-            end
-        end
+    if success and data.name then
+      local nameLower = string.lower(data.name)
+      if string.find(nameLower, "ore") then
+        print("Found ore block at world direction:", dir.vec.x, dir.vec.y, dir.vec.z)
+        return dir.vec
+      end
     end
   end
 
