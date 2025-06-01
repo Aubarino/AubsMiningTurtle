@@ -7,7 +7,7 @@ local ventures = 3
 local tripsToDo = 3
 
 local oreCheckTimer = 0
-print("version 2b1")
+print("version 2b2")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -86,6 +86,12 @@ local function isBlockUnbreakable(directionVector)
       end
     end
   end
+    if data.name then
+        local nameLower = string.lower(data.name)
+        if (string.find(nameLower, "turtle") or string.find(nameLower, "chest")) then
+            return true;
+        end
+    end
 
   return false
 end
@@ -376,7 +382,7 @@ end
 
 -- MAIN MINING THING
 
-print("Starting mining operation...")
+print("Starting operation :)")
 
 while (tripsToDo > 0) do
     local goalYto = (downOffset + math.random(3)) - 1
@@ -413,7 +419,7 @@ while (tripsToDo > 0) do
     returnToOrigin()
     dropNonFuelItemsIntoChest()
     tripsToDo = tripsToDo - 1
-    print("Completed a trip!")
+    print("Completed a trip! trips left: " .. tripsToDo)
 end
 
 print("Done :)")
