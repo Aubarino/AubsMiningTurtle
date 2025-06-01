@@ -90,6 +90,30 @@ local function isBlockUnbreakable(directionVector)
   return false
 end
 
+local function randomMove()
+  local directions = {
+    {x=1, y=0, z=0},   -- east
+    {x=-1, y=0, z=0},  -- west
+    {x=0, y=0, z=1},   -- south
+    {x=0, y=0, z=-1},  -- north
+    {x=0, y=1, z=0},   -- up
+    {x=0, y=-1, z=0},  -- down
+  }
+
+  -- Pick a random index
+  local idx = math.random(#directions)
+  local dirVec = directions[idx]
+
+  -- Use your existing moveOrMineVecAvoid to try move
+  if moveOrMineVecAvoid(dirVec) then
+    print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
+    return true
+  else
+    print("Random move blocked")
+    return false
+  end
+end
+
 -- Try to move or mine in a direction vector {x,y,z} with obstacle avoidance
 local function moveOrMineVecAvoid(dirVec)
   if not tryRefuel() then return false end
@@ -97,7 +121,8 @@ local function moveOrMineVecAvoid(dirVec)
   local function tryMove(dirVec)
     -- Check if block is unbreakable and avoid if so
     if isBlockUnbreakable(dirVec) then
-      return false
+        randomMove()
+        return false
     end
 
     local success = false
