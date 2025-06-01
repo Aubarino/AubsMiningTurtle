@@ -105,7 +105,7 @@ local function randomMove()
   local dirVec = directions[idx]
 
   -- Use your existing moveOrMineVecAvoid to try move
-  if moveOrMineVecAvoid(dirVec) then
+  if this.moveOrMineVecAvoid(dirVec) then
     print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
     return true
   else
