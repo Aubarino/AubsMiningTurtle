@@ -4,7 +4,7 @@ local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
 local downOffset = 16
 local ventures = 3
-print("version 1a")
+print("version 1b")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
