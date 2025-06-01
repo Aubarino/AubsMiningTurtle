@@ -76,6 +76,7 @@ local function isBlockUnbreakable(directionVector)
       end
     end
   end
+--
 
   -- Check hardness (if available)
   if data.hardness ~= nil and data.hardness < 0 then
