@@ -185,6 +185,7 @@ moveOrMineVecAvoid = function(dirVec, preferLevel)
   return false
 end
 
+
 -- Return to origin
 local function returnToOrigin()
   print("Returning to origin...")
