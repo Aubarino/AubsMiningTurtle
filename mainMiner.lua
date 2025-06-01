@@ -72,21 +72,10 @@ local function isBlockUnbreakable(directionVector)
   if data.tags then
     for _, tag in ipairs(data.tags) do
 -- test
-      if tag == "minecraft:unbreakable" or tag == "unbreakable" and tag ~= "minecraft:air" then
+      if (tag == "minecraft:unbreakable" or tag == "unbreakable") and tag ~= "minecraft:air" then
         return true
       end
     end
-  end
---
-
-  -- Check hardness (if available)
-  if data.hardness ~= nil and data.hardness < 0 then
-    return true
-  end
-
-  -- If no harvest tool or level, consider unbreakable
-  if data.harvestTool == nil and data.harvestLevel == nil then
-    return true
   end
 
   return false
