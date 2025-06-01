@@ -7,7 +7,7 @@ local ventures = 3
 local tripsToDo = 3
 
 local oreCheckTimer = 0
-print("version 2a6")
+print("version 2b1")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -90,7 +90,7 @@ local function isBlockUnbreakable(directionVector)
   return false
 end
 
-function detectNearbyOreWorld()
+function detectNearbyOreWorld(doBack)
   local checks = {}
 
   -- Uses `dir` as the turtle's current direction (0 = north, 1 = east, etc.)
@@ -119,17 +119,19 @@ function detectNearbyOreWorld()
   })
 
     -- Back
-    table.insert(checks, {
-        vec = worldDirs[(dir + 2) % 4],
-        check = function()
-        turtle.turnLeft()
-        turtle.turnLeft()
-        local ok, data = turtle.inspect()
-        turtle.turnRight()
-        turtle.turnRight()
-        return ok, data
-        end
-    })
+    if (doBack) then
+        table.insert(checks, {
+            vec = worldDirs[(dir + 2) % 4],
+            check = function()
+            turtle.turnLeft()
+            turtle.turnLeft()
+            local ok, data = turtle.inspect()
+            turtle.turnRight()
+            turtle.turnRight()
+            return ok, data
+            end
+        })
+    end
 
   -- Right
   table.insert(checks, {
@@ -311,11 +313,11 @@ end
 local function mineOreAttempt(directionIn)
     oreCheckTimer = oreCheckTimer + 1
     if (oreCheckTimer >= 2) then
-        local outDir = detectNearbyOreWorld()
+        local outDir = detectNearbyOreWorld(false)
         if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
             moveOrMineVecAvoid(outDir);
             while(outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) do
-                outDir = detectNearbyOreWorld()
+                outDir = detectNearbyOreWorld(true)
                 if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
                     moveOrMineVecAvoid(outDir)
                 end
