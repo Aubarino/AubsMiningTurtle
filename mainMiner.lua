@@ -64,19 +64,11 @@ local function isBlockUnbreakable(directionVector)
   else
     success, data = turtle.inspect()
   end
-  if not success then
-    return false -- no block ahead
-  end
+  if not success then return false end
 
-  -- Check tags for unbreakable flag
   if data.tags then
     for _, tag in ipairs(data.tags) do
--- test
       if (tag == "minecraft:unbreakable" or tag == "unbreakable") and tag ~= "minecraft:air" then
-        print("fallback unbreakable")
-        if tag == "minecraft:unbreakable" print("minecraft:unbreakable") end
-        if tag == "unbreakable" print("unbreakable") end
-        if tag ~= "minecraft:air" print("not minecraft:air") end
         return true
       end
     end
@@ -85,36 +77,27 @@ local function isBlockUnbreakable(directionVector)
   return false
 end
 
--- Forward declarations
+-- Assume these globals exist:
+-- pos = {x=0, y=0, z=0}, dir = 0
+-- helper functions: tryRefuel(), faceDirection(dir), rightOf(dir), leftOf(dir), dirToVector(dir)
+
+-- Forward declaration
 local moveOrMineVecAvoid
 
--- Dependencies assumed to exist:
--- pos, dir, tryRefuel, isBlockUnbreakable, faceDirection, rightOf, leftOf, dirToVector
-
--- Define moveOrMineVecAvoid
-moveOrMineVecAvoid = function(dirVec)
+-- Main movement + avoidance function
+moveOrMineVecAvoid = function(dirVec, preferLevel)
   if not tryRefuel() then return false end
 
   local function tryMove(dVec)
     if isBlockUnbreakable(dVec) then
-
-        local directions = {
-            {x=1, y=0, z=0}, {x=-1, y=0, z=0},
-            {x=0, y=0, z=1}, {x=0, y=0, z=-1},
-            {x=0, y=1, z=0}, {x=0, y=-1, z=0}
-        }
-
-        local idx = math.random(#directions)
-        dirVec = directions[idx]
-
-        if moveOrMineVecAvoid(dirVec) then
-            print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
-            return true
-        else
-            print("Random move blocked")
-            return false
-        end
-        return false
+      local directions = {
+        {x=1, y=0, z=0}, {x=-1, y=0, z=0},
+        {x=0, y=0, z=1}, {x=0, y=0, z=-1},
+        {x=0, y=1, z=0}, {x=0, y=-1, z=0}
+      }
+      local idx = math.random(#directions)
+      local rndVec = directions[idx]
+      return moveOrMineVecAvoid(rndVec)
     end
 
     local success = false
@@ -132,10 +115,7 @@ moveOrMineVecAvoid = function(dirVec)
       elseif dVec.x == -1 then targetDir = 3
       elseif dVec.z == 1 then targetDir = 2
       elseif dVec.z == -1 then targetDir = 0
-      else
-        print("Invalid horizontal move vector")
-        return false
-      end
+      else return false end
 
       faceDirection(targetDir)
       if turtle.detect() then turtle.dig() end
@@ -144,17 +124,16 @@ moveOrMineVecAvoid = function(dirVec)
         if dir == 0 then pos.z = pos.z - 1
         elseif dir == 1 then pos.x = pos.x + 1
         elseif dir == 2 then pos.z = pos.z + 1
-        elseif dir == 3 then pos.x = pos.x - 1
-        end
+        elseif dir == 3 then pos.x = pos.x - 1 end
       end
     end
     return success
   end
 
-  -- Attempt direct move first
+  -- Attempt direct
   if tryMove(dirVec) then return true end
 
-  -- Horizontal? Try detours
+  -- Horizontal bypass
   if dirVec.y == 0 then
     local targetDir
     if dirVec.x == 1 then targetDir = 1
@@ -179,23 +158,20 @@ moveOrMineVecAvoid = function(dirVec)
       end
     end
 
-    for _, vert in ipairs({{x=0, y=1, z=0}, {x=0, y=-1, z=0}}) do
-      if tryMove(vert) and tryMove(dirVec) then
-        return true
+    -- Try vertical detours unless preferLevel is true
+    if not preferLevel then
+      for _, vert in ipairs({{x=0, y=1, z=0}, {x=0, y=-1, z=0}}) do
+        if tryMove(vert) and tryMove(dirVec) then return true end
+        tryMove({x=0, y=-vert.y, z=0})
       end
-      -- Move back if second try failed
-      tryMove({x=0, y=-vert.y, z=0})
     end
 
   else
-    -- Vertical? Try side bypasses
+    -- Vertical direction → try horizontal side bypasses
     for _, sideDirFunc in ipairs({rightOf, leftOf}) do
       local sideDir = sideDirFunc(dir)
       local sideVec = dirToVector(sideDir)
-      if tryMove(sideVec) and tryMove(dirVec) then
-        return true
-      end
-      -- Backtrack
+      if tryMove(sideVec) and tryMove(dirVec) then return true end
       faceDirection((sideDir + 2) % 4)
       turtle.back()
       if dir == 0 then pos.z = pos.z + 1
@@ -209,30 +185,34 @@ moveOrMineVecAvoid = function(dirVec)
   return false
 end
 
--- Return to origin (0,0,0) by moving horizontally first, then vertically
+-- Return to origin
 local function returnToOrigin()
   print("Returning to origin...")
+
   while pos.x ~= 0 do
     local step = (pos.x > 0) and -1 or 1
-    if not moveOrMineVecAvoid({x=step, y=0, z=0}) then
-      print("Blocked on X axis return")
-      break
+    if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
+      print("Retrying X...")
+      sleep(0.1)
     end
   end
+
   while pos.z ~= 0 do
     local step = (pos.z > 0) and -1 or 1
-    if not moveOrMineVecAvoid({x=0, y=0, z=step}) then
-      print("Blocked on Z axis return")
-      break
+    if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
+      print("Retrying Z...")
+      sleep(0.1)
     end
   end
+
   while pos.y ~= 0 do
     local step = (pos.y > 0) and -1 or 1
     if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
-      print("Blocked on Y axis return")
-      break
+      print("Retrying Y...")
+      sleep(0.1)
     end
   end
+
   print("Returned to origin (0,0,0)")
 end
 
