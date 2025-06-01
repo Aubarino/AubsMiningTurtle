@@ -190,34 +190,40 @@ local function returnToOrigin()
   print("Returning to origin...")
 
     while(pos.x ~= 0 and pos.y ~= 0 and pos.z ~= 0)
+        print("Retrying X...")
         while pos.x ~= 0 do
             local step = (pos.x > 0) and -1 or 1
             if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
-            print("Retrying X...")
-            sleep(0.1)
             end
         end
 
+        print("Retrying Z...")
         while pos.z ~= 0 do
             local step = (pos.z > 0) and -1 or 1
             if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
-            print("Retrying Z...")
-            sleep(0.1)
             end
         end
 
-        for i = 1, 2 do
-            if (pos.y ~= 0)
-                local step = (pos.y > 0) and -1 or 1
-                if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
-                print("Retrying Y...")
-                sleep(0.1)
+        if (pos.y ~= 0)
+            local step = (pos.y > 0) and -1 or 1
+            if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
+                print("Going in Y...")
+            end
+
+            if (pos.x ~= 0)
+                local step = (pos.x > 0) and -1 or 1
+                if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
+                end
+            end
+            if (pos.z ~= 0)
+                local step = (pos.z > 0) and -1 or 1
+                if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
                 end
             end
         end
     end
 
-  print("Returned to origin (0,0,0)")
+  print("Back! :)")
 end
 
 -- MAIN MINING THING
