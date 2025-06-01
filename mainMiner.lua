@@ -93,28 +93,6 @@ moveOrMineVecAvoid = function(dirVec)
   if not tryRefuel() then return false end
 
   local function tryMove(dVec)
-    if isBlockUnbreakable(dVec) then
-
-        -- local directions = {
-        --     {x=1, y=0, z=0}, {x=-1, y=0, z=0},
-        --     {x=0, y=0, z=1}, {x=0, y=0, z=-1},
-        --     {x=0, y=1, z=0}, {x=0, y=-1, z=0}
-        -- }
-
-        -- local idx = math.random(#directions)
-        -- dirVec = directions[idx]
-
-        -- if moveOrMineVecAvoid(dirVec) then
-        --     print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
-        --     return true
-        -- else
-        --     print("Random move blocked")
-        --     return false
-        -- end
-        -- return false
-    end
---
-
     local success = false
     if dVec.y == 1 then
       if turtle.detectUp() then turtle.digUp() end
