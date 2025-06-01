@@ -5,6 +5,12 @@ local maxDistance = 16
 local downOffset = 45
 local ventures = 3
 
+function math.clamp(val, lower, upper)
+    assert(val and lower and upper, "not very useful error message here")
+    if lower > upper then lower, upper = upper, lower end -- swap if boundaries supplied the wrong way
+    return math.max(lower, math.min(upper, val))
+end
+
 -- Attempt to refuel from inventory if needed
 local function tryRefuel()
   if turtle.getFuelLevel() == "unlimited" or turtle.getFuelLevel() > 0 then return true end
