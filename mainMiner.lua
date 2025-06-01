@@ -4,7 +4,7 @@ local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
 local downOffset = 16
 local ventures = 3
-print("version 1b")
+print("version 1c")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -245,7 +245,7 @@ local function returnToOrigin()
     end
     while pos.z ~= 0 do
         local step = (pos.z > 0) and -1 or 1
-        if not moveOrMineVecAvoid({x=, y=0, z=step}, true) then
+        if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
             print("Blocked on Z axis")
             sleep(0.05)
     end
