@@ -113,6 +113,7 @@ moveOrMineVecAvoid = function(dirVec)
         -- end
         -- return false
     end
+--
 
     local success = false
     if dVec.y == 1 then
