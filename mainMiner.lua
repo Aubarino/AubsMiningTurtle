@@ -7,7 +7,7 @@ local ventures = 3
 local tripsToDo = 3
 
 local oreCheckTimer = 0
-print("version 2b2")
+print("version 2b3")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -167,7 +167,7 @@ function detectNearbyOreWorld(doBack)
     local success, data = dir.check()
     if success and data.name then
       local nameLower = string.lower(data.name)
-      if string.find(nameLower, "ore") then
+      if (string.find(nameLower, "ore") or string.find(nameLower, "magnetite")) then
         print("Found ore block at world direction:", dir.vec.x, dir.vec.y, dir.vec.z)
         return dir.vec
       end
