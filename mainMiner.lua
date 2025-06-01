@@ -90,33 +90,7 @@ local function isBlockUnbreakable(directionVector)
   return false
 end
 
-local function randomMove()
-  local directions = {
-    {x=1, y=0, z=0},   -- east
-    {x=-1, y=0, z=0},  -- west
-    {x=0, y=0, z=1},   -- south
-    {x=0, y=0, z=-1},  -- north
-    {x=0, y=1, z=0},   -- up
-    {x=0, y=-1, z=0},  -- down
-  }
-
-  local idx = math.random(#directions)
-  local dirVec = directions[idx]
-
-  if tryMove({x = dirVec.x,y = dirVec.y, z = dirVec.z}) then
-    print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
-    return true
-  else
-    print("Random move blocked")
-    return false
-  end
-end
-
--- Try to move or mine in a direction vector {x,y,z} with obstacle avoidance
-local function moveOrMineVecAvoid(dirVec)
-  if not tryRefuel() then return false end
-
-  local function tryMove(dirVec)
+local function tryMove(dirVec)
     -- Check if block is unbreakable and avoid if so
     if isBlockUnbreakable(dirVec) then
         randomMove()
@@ -154,6 +128,12 @@ local function moveOrMineVecAvoid(dirVec)
         end
       end
     end
+    return success
+end
+
+-- Try to move or mine in a direction vector {x,y,z} with obstacle avoidance
+local function moveOrMineVecAvoid(dirVec)
+  if not tryRefuel() then return false end
     return success
   end
 
@@ -236,6 +216,28 @@ local function moveOrMineVecAvoid(dirVec)
 
   print("All bypass attempts failed for direction:", dirVec.x, dirVec.y, dirVec.z)
   return false
+end
+
+local function randomMove()
+  local directions = {
+    {x=1, y=0, z=0},   -- east
+    {x=-1, y=0, z=0},  -- west
+    {x=0, y=0, z=1},   -- south
+    {x=0, y=0, z=-1},  -- north
+    {x=0, y=1, z=0},   -- up
+    {x=0, y=-1, z=0},  -- down
+  }
+
+  local idx = math.random(#directions)
+  local dirVec = directions[idx]
+
+  if tryMove({x = dirVec.x,y = dirVec.y, z = dirVec.z}) then
+    print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
+    return true
+  else
+    print("Random move blocked")
+    return false
+  end
 end
 
 -- Return to origin (0,0,0) by moving horizontally first, then vertically
