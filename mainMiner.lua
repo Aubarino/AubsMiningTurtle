@@ -265,7 +265,8 @@ end
 
 print("Starting mining operation...")
 
-for i = 1, (downOffset + math.random(3)) - 1 do
+local goalYto = (downOffset + math.random(3)) - 1
+for i = 1, goalYto do
     if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
         print("Failed mining down at step " .. i)
         break
@@ -273,16 +274,18 @@ for i = 1, (downOffset + math.random(3)) - 1 do
 end
 for ventureCurrent = 0, ventures do
     moveOrMineVecAvoid({x=0, y=-1, z=0})
-    local zOffsetGoal = ((clamp(math.random(),0,1) * 2) - 1)
-    for i = 1, clamp((math.random(maxDistance) + 1) - pos.z,0,999) do
+    local zOffsetGoal = ((math.random() * 2) - 1)
+    print(zOffsetGoal + " z")
+    for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
         if not moveOrMineVecAvoid({x=0, y=0, z=zOffsetGoal}) then
             print("Failed moving forward at step " .. i)
             break
         end
     end
 
-    local xOffsetGoal = ((clamp(math.random(),0,1) * 2) - 1)
-    for i = 1, clamp((math.random(maxDistance) + 1) - pos.x,0,999) do
+    local xOffsetGoal = ((math.random() * 2) - 1)
+    print(xOffsetGoal + " x")
+    for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
         if not moveOrMineVecAvoid({x=zOffsetGoal, y=0, z=0}) then
             print("Failed moving forward at step " .. i)
             break
