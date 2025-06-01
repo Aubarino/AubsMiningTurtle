@@ -4,7 +4,9 @@ local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
 local downOffset = 16
 local ventures = 3
-print("version 2a")
+
+local oreCheckTimer = 0
+print("version 2a2")
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -126,19 +128,6 @@ function detectNearbyOreWorld()
     end
   })
 
-  -- Back
-  table.insert(checks, {
-    vec = worldDirs[(dir + 2) % 4],
-    check = function()
-      turtle.turnLeft()
-      turtle.turnLeft()
-      local ok, data = turtle.inspect()
-      turtle.turnRight()
-      turtle.turnRight()
-      return ok, data
-    end
-  })
-
   -- Up
   table.insert(checks, {
     vec = {x=0, y=1, z=0},
@@ -155,12 +144,12 @@ function detectNearbyOreWorld()
   for _, dir in ipairs(checks) do
     local success, data = dir.check()
     if success and data.tags then
-      for _, tag in ipairs(data.tags) do
-        if string.find(tag:lower(), "ore") then
-          print("Found ore block at world direction:", dir.vec.x, dir.vec.y, dir.vec.z)
-          return dir.vec
+        for _, tag in ipairs(data.tags) do
+            if (tag == "c:ores") then
+                print("Found ore block at world direction:", dir.vec.x, dir.vec.y, dir.vec.z)
+                return dir.vec
+            end
         end
-      end
     end
   end
 
@@ -354,11 +343,13 @@ local function returnToOrigin()
 end
 
 local function mineOreAttempt(directionIn)
-    if (math.random(10) > 7) then
+    oreCheckTimer = oreCheckTimer + 1
+    if (oreCheckTimer >= 2) then
         local outDir = detectNearbyOreWorld()
         if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
             moveOrMineVecAvoid(outDir);
         end
+        oreCheckTimer = 0
     end
 end
 
