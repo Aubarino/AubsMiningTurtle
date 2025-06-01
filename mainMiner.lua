@@ -203,6 +203,7 @@ local function returnToOrigin()
         print("Blocked on Z axis")
         sleep(0.1)
       end
+    end
     if pos.y ~= 0 then
       local step = (pos.y > 0) and -1 or 1
       if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
