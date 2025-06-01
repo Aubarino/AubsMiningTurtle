@@ -35,15 +35,40 @@ local function faceDirection(targetDir)
   end
 end
 
--- Check if block is unbreakable or should be avoided
-local function isBlockUnbreakable()
-  local success, data = turtle.inspect()
+-- Helper: get direction to the right of current direction (0-3)
+local function rightOf(d)
+  return (d + 1) % 4
+end
+
+-- Helper: get direction to the left of current direction (0-3)
+local function leftOf(d)
+  return (d + 3) % 4
+end
+
+-- Helper: convert direction index to vector {x,z}
+local function dirToVector(d)
+  if d == 0 then return {x=0, z=-1} -- north
+  elseif d == 1 then return {x=1, z=0} -- east
+  elseif d == 2 then return {x=0, z=1} -- south
+  elseif d == 3 then return {x=-1, z=0} -- west
+  end
+end
+
+-- Check if block ahead in given direction vector is unbreakable or should be avoided
+local function isBlockUnbreakable(directionVector)
+  local success, data
+  if directionVector.y == 1 then
+    success, data = turtle.inspectUp()
+  elseif directionVector.y == -1 then
+    success, data = turtle.inspectDown()
+  else
+    success, data = turtle.inspect()
+  end
   if not success then
-    -- No block ahead, so no block to be unbreakable
-    return false
+    return false -- no block ahead
   end
 
-  -- Check if block has 'tags' and if it includes 'minecraft:unbreakable' or similar
+  -- Check tags for unbreakable flag
   if data.tags then
     for _, tag in ipairs(data.tags) do
       if tag == "minecraft:unbreakable" or tag == "unbreakable" then
@@ -53,183 +78,168 @@ local function isBlockUnbreakable()
   end
 
   -- Check hardness (if available)
-  -- Blocks with hardness <= 0 might be unbreakable or instant break (like air)
-  if data.hardness ~= nil then
-    if data.hardness < 0 then
-      return true
-    end
-  end
-
-  -- Check if the block is harvestable (some mods may have this info)
-  -- If the block cannot be harvested (digged), treat it as unbreakable
-  if data.harvestTool == nil and data.harvestLevel == nil then
-    -- No harvest tool or level means likely unbreakable or special block
+  if data.hardness ~= nil and data.hardness < 0 then
     return true
   end
 
-  -- If none of the above flags it, assume breakable
+  -- If no harvest tool or level, consider unbreakable
+  if data.harvestTool == nil and data.harvestLevel == nil then
+    return true
+  end
+
   return false
 end
 
--- Attempt to move or mine with obstacle avoidance (go around to right if blocked)
-local function moveOrMineVecWithAvoid(dirVec)
-  -- Attempt to move/mine in dirVec, with wall-following obstacle avoidance to the right
+-- Try to move or mine in a direction vector {x,y,z} with obstacle avoidance
+local function moveOrMineVecAvoid(dirVec)
+  if not tryRefuel() then return false end
 
-  -- Helper: move forward one block, return success boolean
-  local function tryForward()
-    if not tryRefuel() then return false end
-    if turtle.detect() then
-      if isBlockUnbreakable() then return false end
-      turtle.dig()
+  local function tryMove(dirVec)
+    -- Check if block is unbreakable and avoid if so
+    if isBlockUnbreakable(dirVec) then
+      return false
     end
-    local success = turtle.forward()
-    if success then
-      if dir == 0 then pos.z = pos.z - 1
-      elseif dir == 1 then pos.x = pos.x + 1
-      elseif dir == 2 then pos.z = pos.z + 1
-      elseif dir == 3 then pos.x = pos.x - 1 end
+
+    local success = false
+    if dirVec.y == 1 then
+      if turtle.detectUp() then turtle.digUp() end
+      success = turtle.up()
+      if success then pos.y = pos.y + 1 end
+    elseif dirVec.y == -1 then
+      if turtle.detectDown() then turtle.digDown() end
+      success = turtle.down()
+      if success then pos.y = pos.y - 1 end
+    else
+      -- horizontal move
+      local targetDir = nil
+      if dirVec.x == 1 then targetDir = 1
+      elseif dirVec.x == -1 then targetDir = 3
+      elseif dirVec.z == 1 then targetDir = 2
+      elseif dirVec.z == -1 then targetDir = 0
+      else
+        print("Invalid horizontal move vector")
+        return false
+      end
+      faceDirection(targetDir)
+      if turtle.detect() then turtle.dig() end
+      success = turtle.forward()
+      if success then
+        if dir == 0 then pos.z = pos.z - 1
+        elseif dir == 1 then pos.x = pos.x + 1
+        elseif dir == 2 then pos.z = pos.z + 1
+        elseif dir == 3 then pos.x = pos.x - 1
+        end
+      end
     end
     return success
   end
 
-  -- Determine horizontal movement only for obstacle avoidance (y must be 0)
-  if dirVec.y ~= 0 then
-    -- No horizontal obstacle avoidance for vertical moves, just moveOrMineVec directly
-    if dirVec.y == 1 then
-      if turtle.detectUp() then turtle.digUp() end
-      if turtle.up() then pos.y = pos.y + 1 return true else return false end
-    elseif dirVec.y == -1 then
-      if turtle.detectDown() then turtle.digDown() end
-      if turtle.down() then pos.y = pos.y - 1 return true else return false end
-    end
-    return false -- Shouldn't reach here
+  -- Try direct move first
+  if tryMove(dirVec) then
+    return true
   end
 
-  -- Calculate targetDir from dirVec (only x or z axis)
-  local targetDir = nil
-  if dirVec.x == 1 then targetDir = 1
-  elseif dirVec.x == -1 then targetDir = 3
-  elseif dirVec.z == 1 then targetDir = 2
-  elseif dirVec.z == -1 then targetDir = 0
-  else
-    print("Invalid horizontal move vector in avoidance")
-    return false
-  end
+  -- Obstacle avoidance:
 
-  faceDirection(targetDir)
-
-  -- Try to move forward normally first
-  if tryForward() then return true end
-
-  -- Blocked or unbreakable -> try to go around to right
-  turnRight()
-  if tryForward() then
-    turnLeft()
-    if tryForward() then
-      return true
-    else
-      -- Can't move forward after going right; try left side recovery
-      turnLeft()
-      if tryForward() then
-        turnRight()
-        return true
-      else
-        -- Stuck
-        turnRight() -- restore original facing
-        return false
-      end
-    end
-  else
-    -- Can't move right either, try going left instead
-    turnLeft()
-    turnLeft() -- turned 180 from original
-    if tryForward() then
-      turnRight()
-      if tryForward() then
-        return true
-      else
-        turnRight()
-        return false
-      end
-    else
-      -- No options
-      turnRight() -- restore facing original
-      return false
-    end
-  end
-end
-
--- Original moveOrMineVec, renamed for internal use without avoidance
-local function moveOrMineVec(dirVec)
-  if not tryRefuel() then return false end
-  local success = false
-
-  if dirVec.y == 1 then
-    if turtle.detectUp() then turtle.digUp() end
-    success = turtle.up()
-    if success then pos.y = pos.y + 1 end
-  elseif dirVec.y == -1 then
-    if turtle.detectDown() then turtle.digDown() end
-    success = turtle.down()
-    if success then pos.y = pos.y - 1 end
-  else
+  -- If horizontal move, try right, left, up, down detours
+  if dirVec.y == 0 then
     local targetDir = nil
     if dirVec.x == 1 then targetDir = 1
     elseif dirVec.x == -1 then targetDir = 3
     elseif dirVec.z == 1 then targetDir = 2
     elseif dirVec.z == -1 then targetDir = 0
     else
-      print("Invalid horizontal move vector")
       return false
     end
-    faceDirection(targetDir)
-    if turtle.detect() then turtle.dig() end
-    success = turtle.forward()
-    if success then
-      if dir == 0 then pos.z = pos.z - 1
-      elseif dir == 1 then pos.x = pos.x + 1
-      elseif dir == 2 then pos.z = pos.z + 1
-      elseif dir == 3 then pos.x = pos.x - 1
+
+    local rightDir = rightOf(targetDir)
+    local rightVec = dirToVector(rightDir)
+    if tryMove({x=rightVec.x, y=0, z=rightVec.z}) then
+      if tryMove(dirVec) then
+        return true
+      end
+      -- Backtrack
+      faceDirection(rightOf(rightOf(rightDir)))
+      turtle.back()
+      if dir == 0 then pos.z = pos.z + 1
+      elseif dir == 1 then pos.x = pos.x - 1
+      elseif dir == 2 then pos.z = pos.z - 1
+      elseif dir == 3 then pos.x = pos.x + 1
+      end
+    end
+
+    local leftDir = leftOf(targetDir)
+    local leftVec = dirToVector(leftDir)
+    if tryMove({x=leftVec.x, y=0, z=leftVec.z}) then
+      if tryMove(dirVec) then
+        return true
+      end
+      faceDirection(rightOf(leftDir))
+      turtle.back()
+      if dir == 0 then pos.z = pos.z + 1
+      elseif dir == 1 then pos.x = pos.x - 1
+      elseif dir == 2 then pos.z = pos.z - 1
+      elseif dir == 3 then pos.x = pos.x + 1
+      end
+    end
+
+    if tryMove({x=0, y=1, z=0}) then
+      if tryMove(dirVec) then return true end
+      tryMove({x=0, y=-1, z=0})
+    end
+
+    if tryMove({x=0, y=-1, z=0}) then
+      if tryMove(dirVec) then return true end
+      tryMove({x=0, y=1, z=0})
+    end
+
+  else
+    -- If vertical move, try right and left horizontal bypasses
+    for _, sideDirFunc in ipairs({rightOf, leftOf}) do
+      local sideDir = sideDirFunc(dir)
+      local sideVec = dirToVector(sideDir)
+      if tryMove({x=sideVec.x, y=0, z=sideVec.z}) then
+        if tryMove(dirVec) then return true end
+        faceDirection((sideDir + 2) % 4)
+        turtle.back()
+        if dir == 0 then pos.z = pos.z + 1
+        elseif dir == 1 then pos.x = pos.x - 1
+        elseif dir == 2 then pos.z = pos.z - 1
+        elseif dir == 3 then pos.x = pos.x + 1
+        end
       end
     end
   end
 
-  if not success then print("Failed to move/mine in direction: ", dirVec.x, dirVec.y, dirVec.z) end
-  return success
-end
-
--- Path to specific position relative to origin, bias X and Z first, then Y
-local function moveToPos(targetPos)
-  -- Move in X axis
-  while pos.x ~= targetPos.x do
-    local step = (pos.x < targetPos.x) and 1 or -1
-    if not moveOrMineVecWithAvoid({x=step, y=0, z=0}) then
-      print("Blocked on X axis moving to position")
-      return false
-    end
-  end
-  -- Move in Z axis
-  while pos.z ~= targetPos.z do
-    local step = (pos.z < targetPos.z) and 1 or -1
-    if not moveOrMineVecWithAvoid({x=0, y=0, z=step}) then
-      print("Blocked on Z axis moving to position")
-      return false
-    end
-  end
-  -- Move in Y axis
-  while pos.y ~= targetPos.y do
-    local step = (pos.y < targetPos.y) and 1 or -1
-    if not moveOrMineVecWithAvoid({x=0, y=step, z=0}) then
-      print("Blocked on Y axis moving to position")
-      return false
-    end
-  end
-  return true
+  print("All bypass attempts failed for direction:", dirVec.x, dirVec.y, dirVec.z)
+  return false
 end
 
 -- Return to origin (0,0,0) by moving horizontally first, then vertically
 local function returnToOrigin()
-  return moveToPos({x=0, y=0, z=0})
+  print("Returning to origin...")
+  while pos.x ~= 0 do
+    local step = (pos.x > 0) and -1 or 1
+    if not moveOrMineVecAvoid({x=step, y=0, z=0}) then
+      print("Blocked on X axis return")
+      break
+    end
+  end
+  while pos.z ~= 0 do
+    local step = (pos.z > 0) and -1 or 1
+    if not moveOrMineVecAvoid({x=0, y=0, z=step}) then
+      print("Blocked on Z axis return")
+      break
+    end
+  end
+  while pos.y ~= 0 do
+    local step = (pos.y > 0) and -1 or 1
+    if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
+      print("Blocked on Y axis return")
+      break
+    end
+  end
+  print("Returned to origin (0,0,0)")
 end
 
 -- MAIN MINING THING
@@ -237,14 +247,14 @@ end
 print("Starting mining operation...")
 
 for i = 1, 4 do
-  if not moveOrMineVecWithAvoid({x=0, y=-1, z=0}) then
+  if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
     print("Failed mining down at step " .. i)
     break
   end
 end
 
 for i = 1, 2 do
-  if not moveOrMineVecWithAvoid({x=0, y=0, z=1}) then
+  if not moveOrMineVecAvoid({x=0, y=0, z=1}) then
     print("Failed moving forward at step " .. i)
     break
   end
