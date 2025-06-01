@@ -103,7 +103,7 @@ local function randomMove()
   local idx = math.random(#directions)
   local dirVec = directions[idx]
 
-  if moveOrMineVecAvoid({x = dirVec.x,y = dirVec.y, z = dirVec.z}) then
+  if tryMove({x = dirVec.x,y = dirVec.y, z = dirVec.z}) then
     print(string.format("Moved randomly to (%d,%d,%d)", dirVec.x, dirVec.y, dirVec.z))
     return true
   else
