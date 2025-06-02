@@ -16,7 +16,6 @@ if not mon then
     return
 end
 print(peripheral.getType("right"))
-print peripheral.getNames()
 
 local side
 for _, name in pairs(peripheral.getNames()) do
