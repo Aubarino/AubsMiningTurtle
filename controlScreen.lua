@@ -84,8 +84,8 @@ local function draw()
 
     mon.setBackgroundColor(colors.black)
     mon.setTextColor(colors.white)
-    mon.setCursorPos(1, 2)
-    mon.write("Aub Turtle HQ (version "..VERSION..")")
+    mon.setCursorPos(2, 1)
+    mon.write("-= Aub Turtle HQ (version "..VERSION..") =-")
     lineGoal = 4
 
     for i, id in ipairs(sortedIDs) do
@@ -122,12 +122,6 @@ local function listenForTurtles()
             }
             trailIdToSet = trailIdToSet + 1
             if trailIdToSet > 256 then trailIdToSet = 0 end
-        else
-            mon.setBackgroundColor(colors.blue)
-            mon.setTextColor(colors.white)
-            mon.setCursorPos(2, 1)
-            mon.write("-= Aub Turtle HQ (version "..VERSION..") =-")
-            sleep(0.25)
         end
         draw()
         sleep(0.1)
@@ -149,7 +143,7 @@ local function listenForInput()
         term.setTextColor(colors.white)
         input = read()
         term.clear()
-        term.setCursorPos(1, 1)
+        term.setCursorPos(1, 4)
         if (string.find(input, "return")) then
             rednet.broadcast({
                 title = "turtleAubReturn"
@@ -170,9 +164,9 @@ local function listenForInput()
         end
         if (input == "help") then
             term.write("return : makes all turtles return.")
-            term.setCursorPos(1, 2)
+            term.setCursorPos(1, 5)
             term.write("mine deep : makes all turtles mine deep 90 blocks and more")
-            term.setCursorPos(1, 3)
+            term.setCursorPos(1, 6)
             term.write("go : makes all the turtles mine.")
         end
     end
