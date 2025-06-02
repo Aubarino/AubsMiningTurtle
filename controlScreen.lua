@@ -7,6 +7,7 @@ local turtles = {}
 local trails = {}
 local trailIdToSet = 0
 local stopSignal = false
+local globalStartPos {x = 0, y = 0, z = 0}
 rednet.open("back")
 local input = ""
 local lineGoal = 1
@@ -17,7 +18,7 @@ local gradientColors = {
     colors.green, colors.cyan, colors.blue, colors.purple
 }
 local gradientShades = {
-    colors.white, colors.lightGray, colors.gray, colors.gray
+    colors.white, colors.lightGray, colors.lightGray, colors.gray
 }
 
 -- Monitor setup
@@ -32,6 +33,21 @@ if not mon then
     print("Monitor not found!")
     return
 end
+
+print("Enter average turtle origin pos : x y z")
+local input = read()
+
+-- Split input string into x, y, z
+local xStr, yStr, zStr = input:match("^(%-?%d+)%s+(%-?%d+)%s+(%-?%d+)$")
+if not xStr then
+    print("Invalid input. Please enter three space-separated numbers.")
+    return
+end
+globalStartPos = {
+    x = tonumber(xStr),
+    y = tonumber(yStr),
+    z = tonumber(zStr)
+}
 
 local function draw()
     mon.clear()
@@ -70,8 +86,8 @@ local function draw()
         local turt = turtles[id]
         local color = gradientColors[math.floor((i - 1) % #gradientColors) + 1]
 
-        local relX = (turt.glX + turt.x - 650) * 0.2
-        local relZ = (turt.glZ + turt.z - 379) * 0.2
+        local relX = (turt.glX + turt.x - globalStartPos.x) * 0.2
+        local relZ = (turt.glZ + turt.z - globalStartPos.z) * 0.2
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
@@ -116,9 +132,9 @@ local function listenForTurtles()
                 status = message.status
             }
             trails[trailIdToSet] = {
-                x = (message.glX + message.x - 650),
+                x = (message.glX + message.x - globalStartPos.x),
                 y = message.y,
-                z = (message.glZ + message.z - 379)
+                z = (message.glZ + message.z - globalStartPos.z)
             }
             trailIdToSet = trailIdToSet + 1
             if trailIdToSet > 256 then trailIdToSet = 0 end

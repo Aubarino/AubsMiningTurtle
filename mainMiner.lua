@@ -17,7 +17,7 @@ local forceMineDeep = false
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2d4")
+print("Aub turtle miner || version 2e7")
 print("===============================")
 
 print("Enter starting pos : x y z")
@@ -371,28 +371,30 @@ local function returnToOrigin()
     print("Returning to origin...")
     status = "Returning"
 
-    while pos.x ~= 0 do
-        mineOreAttempt()
-        local step = (pos.x > 0) and -1 or 1
-        if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
-            print("Blocked on X axis")
-            break
+    while (pos.x ~= 0 and pos.y ~= 0 and pos.z ~= 0) do
+        while pos.x ~= 0 do
+            mineOreAttempt()
+            local step = (pos.x > 0) and -1 or 1
+            if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
+                print("Blocked on X axis")
+                break
+            end
         end
-    end
-    while pos.z ~= 0 do
-        mineOreAttempt()
-        local step = (pos.z > 0) and -1 or 1
-        if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
-            print("Blocked on Z axis")
-            break
+        while pos.z ~= 0 do
+            mineOreAttempt()
+            local step = (pos.z > 0) and -1 or 1
+            if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
+                print("Blocked on Z axis")
+                break
+            end
         end
-    end
-    while pos.y ~= 0 do
-        mineOreAttempt()
-        local step = (pos.y > 0) and -1 or 1
-        if not moveOrMineVecAvoid({x=0, y=step, z=0}, true) then
-            print("Blocked on Y axis")
-            break
+        while pos.y ~= 0 do
+            mineOreAttempt()
+            local step = (pos.y > 0) and -1 or 1
+            if not moveOrMineVecAvoid({x=0, y=step, z=0}, true) then
+                print("Blocked on Y axis")
+                break
+            end
         end
     end
 
@@ -495,14 +497,6 @@ local function mainMineCode()
 
             -- Deposit items
             dropNonFuelItemsIntoChest()
-
-            -- Ascend back to starting Y
-            while pos.y < 0 do
-                if not moveOrMineVecAvoid({x=0, y=1, z=0}) then
-                    print("Blocked ascending")
-                    break
-                end
-            end
 
             tripsToDo = tripsToDo - 1
         end
