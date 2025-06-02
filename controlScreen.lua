@@ -44,13 +44,10 @@ local function draw()
     mon.write("Aub Turtle HQ (version i)\n")
     lineGoal = 3
 
-    -- Convert turtles to a sorted list to get consistent color order
     local sortedIDs = {}
     for id in pairs(turtles) do table.insert(sortedIDs, id) end
     table.sort(sortedIDs)
 
-    -- Draw text lines with color
-    mon.setTextScale(0.5)
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
         local relX = turt.x - origin.x
@@ -64,20 +61,16 @@ local function draw()
         lineGoal = lineGoal + 1
     end
 
-    -- Draw map squares
     local w, h = mon.getSize()
     local squareSize = 1
 
-    for i, id in ipairs(trails) do
-        local trail = trails[i]
-        local color = gradientShades[math.floor(math.min(math.max(((math.min(math.abs(trail.y),1) / 16) * 3) + 1,4),1))]
+    for i, trail in ipairs(trails) do
+        local color = gradientShades[math.floor(math.min(math.max(((math.min(math.abs(trail.y),1) / 16) * 3) + 1, 4), 1))]
 
         local relX = (trail.x) * -0.1
         local relZ = (trail.z) * -0.1
-
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
-        mon.setTextScale(math.max(2.0 + ((math.min(math.abs(trail.y),1) / 32.0) * -1.0),0.5))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
@@ -92,10 +85,8 @@ local function draw()
 
         local relX = (turt.glX + turt.x - 650) * -0.1
         local relZ = (turt.glZ + turt.z - 379) * -0.1
-
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
-        mon.setTextScale(math.max(0.5, math.min(1.5, 1.5 + (turt.y / 32))))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
@@ -104,7 +95,7 @@ local function draw()
         end
     end
 
-    mon.setBackgroundColor(colors.black) -- Reset background
+    mon.setBackgroundColor(colors.black)
 end
 
 -- Listen for position updates
