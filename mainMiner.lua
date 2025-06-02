@@ -132,8 +132,8 @@ local function isBlockUnbreakable(directionVector)
   end
     if data.name then
         local nameLower = string.lower(data.name)
-        if (string.find(nameLower, "turtle") or string.find(nameLower, "chest")) then
-            return true;
+        if nameLower:find("chest") or nameLower:find("turtle") or nameLower:find("furnace") or nameLower:find("dropper") then
+            return true
         end
     end
 
@@ -382,50 +382,51 @@ end
 -- Return to origin (clean and reliable)
 local function returnToOrigin()
   print("Returning to origin...")
-    status = "Returning"
+  status = "Returning"
 
-    moveOrMineVecAvoid({x=0, y=1, z=0})
-
-    while pos.x ~= 0 do
-        mineOreAttempt()
-        local step = (pos.x > 0) and -1 or 1
-        if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
-            print("Blocked on X axis")
-            sleep(0.05)
-        end
+  -- Step 1: Go to correct X
+  while pos.x ~= 0 do
+    mineOreAttempt()
+    local step = (pos.x > 0) and -1 or 1
+    if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
+      print("Blocked on X axis")
+      sleep(0.1)
     end
-    while pos.z ~= 0 do
-        mineOreAttempt()
-        local step = (pos.z > 0) and -1 or 1
-        if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
-            print("Blocked on Z axis")
-            sleep(0.05)
-        end
-    end
+  end
 
-    while pos.x ~= 0 or pos.z ~= 0 or pos.y ~= 0 do
-        if pos.x ~= 0 then
-            local step = (pos.x > 0) and -1 or 1
-            if not moveOrMineVecAvoid({x=step, y=0, z=0}, true) then
-                print("Blocked on X axis")
-        end
-        elseif pos.z ~= 0 then
-            local step = (pos.z > 0) and -1 or 1
-            if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
-                print("Blocked on Z axis")
-            end
-        end
-        if pos.y ~= 0 then
-            local step = (pos.y > 0) and -1 or 1
-            if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
-                print("Blocked on Y axis")
-            end
-        end
+  -- Step 2: Go to correct Z
+  while pos.z ~= 0 do
+    mineOreAttempt()
+    local step = (pos.z > 0) and -1 or 1
+    if not moveOrMineVecAvoid({x=0, y=0, z=step}, true) then
+      print("Blocked on Z axis")
+      sleep(0.1)
     end
+  end
 
-    faceNorth()
+  -- Step 3: Go to correct Y (now safe to ascend!)
+  while pos.y ~= 0 do
+    mineOreAttempt()
+    local step = (pos.y > 0) and -1 or 1
+    if not moveOrMineVecAvoid({x=0, y=step, z=0}) then
+      print("Blocked on Y axis")
+      sleep(0.1)
+    end
+  end
+
+  -- Safety fallback: back off one step to avoid standing *in* the chest space
+  if turtle.detect() then
+    print("At drop-off point, attempting backup to avoid chest collision")
+    turtle.back()
+    if dir == 0 then pos.z = pos.z + 1
+    elseif dir == 1 then pos.x = pos.x - 1
+    elseif dir == 2 then pos.z = pos.z - 1
+    elseif dir == 3 then pos.x = pos.x + 1 end
+  end
+
+  faceNorth()
   print("Back! :)")
-    status = "Back!"
+  status = "Back!"
 end
 
 -- MAIN MINING THING
