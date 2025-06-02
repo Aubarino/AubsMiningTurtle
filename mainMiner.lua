@@ -8,6 +8,7 @@ local ventures = 3
 local tripsToDo = 3
 local turtNumber = 0
 local id = "AubMiner0"
+local status = ""
 
 local oreCheckTimer = 0
 print("===============================")
@@ -39,7 +40,7 @@ local globalStartPos = {
 rednet.open("left") -- or whatever side the modem is on
 
 
-local function sendPosition()
+local function sendPosition(progressStatus)
     rednet.broadcast({
         id = id,
         x = pos.x,
@@ -47,7 +48,8 @@ local function sendPosition()
         z = pos.z,
         glX = globalStartPos.x,
         glY = globalStartPos.y,
-        glZ = globalStartPos.z
+        glZ = globalStartPos.z,
+        status = progressStatus
     }, "turtlePosData")
 end
 
@@ -361,7 +363,7 @@ end
 local function mineOreAttempt(directionIn)
     oreCheckTimer = oreCheckTimer + 1
     if (oreCheckTimer >= 2) then
-        sendPosition()
+        sendPosition(status)
         local outDir = detectNearbyOreWorld(false)
         if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
             moveOrMineVecAvoid(outDir);
@@ -370,7 +372,7 @@ local function mineOreAttempt(directionIn)
                 if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
                     moveOrMineVecAvoid(outDir)
                 end
-                sendPosition()
+                sendPosition("Mining Ore Vein!")
             end
         end
         oreCheckTimer = 0
@@ -380,6 +382,7 @@ end
 -- Return to origin (clean and reliable)
 local function returnToOrigin()
   print("Returning to origin...")
+    status = "Returning"
 
     moveOrMineVecAvoid({x=0, y=1, z=0})
 
@@ -422,6 +425,7 @@ local function returnToOrigin()
 
     faceNorth()
   print("Back! :)")
+    status = "Back!"
 end
 
 -- MAIN MINING THING
@@ -430,6 +434,7 @@ print("Starting operation :)")
 
 while (tripsToDo > 0) do
     local goalYto = (downOffset + math.random(3)) - 1
+    status = "Mining, trips left: "..tripsToDo
     for i = 1, goalYto do
         mineOreAttempt()
         if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
@@ -439,8 +444,9 @@ while (tripsToDo > 0) do
     end
     for ventureCurrent = 0, ventures do
         moveOrMineVecAvoid({x=0, y=-1, z=0})
-        local zOffsetGoal = ((math.random() * 2) - 1)
+        local zOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
         print(tostring(zOffsetGoal) .. " z")
+        status = "Mining, z"..zOffsetGoal.." now. trips left: "..tripsToDo
         for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
             mineOreAttempt()
             if not moveOrMineVecAvoid({x=0, y=0, z=math.floor(zOffsetGoal)}) then
@@ -449,8 +455,9 @@ while (tripsToDo > 0) do
             end
         end
 
-        local xOffsetGoal = ((math.random() * 2) - 1)
+        local xOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
         print(tostring(xOffsetGoal) .. " x")
+        status = "Mining, x"..xOffsetGoal.." now. trips left: "..tripsToDo
         for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
             mineOreAttempt()
             if not moveOrMineVecAvoid({x=math.floor(zOffsetGoal), y=0, z=0}) then
