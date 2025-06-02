@@ -10,6 +10,13 @@ local input = read()
 -- Optional monitor support
 local mon = peripheral.find("monitor")
 if mon then mon.setTextScale(0.5) end
+print("Status : ONLINE")
+print("Peripherals : "..peripheral.getNames())
+if not mon then
+    print("Monitor not found!")
+    return
+end
+print(peripheral.getType("right"))
 
 local function draw()
     local display = mon or term
@@ -42,4 +49,5 @@ local display = mon or term
 display.clear()
 display.setCursorPos(1, 1)
 display.write("Aub turtle HQ\nStatus : OFFLINE")
+print("Status : OFFLINE")
 draw()
