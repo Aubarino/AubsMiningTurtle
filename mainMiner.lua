@@ -12,7 +12,7 @@ local status = ""
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b4")
+print("Aub turtle miner || version 2b5")
 print("===============================")
 
 print("Enter starting pos : x y z")
@@ -431,46 +431,54 @@ end
 -- MAIN MINING THING
 
 print("Starting operation :)")
-
-while (tripsToDo > 0) do
-    local goalYto = (downOffset + math.random(3)) - 1
-    status = "Mining, trips left: "..tripsToDo
-    for i = 1, goalYto do
-        mineOreAttempt()
-        if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
-            --print("Failed mining down at step " .. i)
-            break
-        end
-    end
-    for ventureCurrent = 0, ventures do
-        moveOrMineVecAvoid({x=0, y=-1, z=0})
-        local zOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
-        print(tostring(zOffsetGoal) .. " z")
-        status = "Mining, z"..zOffsetGoal.." now. trips left: "..tripsToDo
-        for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+local doingMining = true
+while (doingMining) do
+    while (tripsToDo > 0) do
+        local goalYto = (downOffset + math.random(3)) - 1
+        status = "Mining, trips left: "..tripsToDo
+        for i = 1, goalYto do
             mineOreAttempt()
-            if not moveOrMineVecAvoid({x=0, y=0, z=math.floor(zOffsetGoal)}) then
-                --print("Failed step " .. i)
+            if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
+                --print("Failed mining down at step " .. i)
                 break
             end
         end
+        for ventureCurrent = 0, ventures do
+            moveOrMineVecAvoid({x=0, y=-1, z=0})
+            local zOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
+            print(tostring(zOffsetGoal) .. " z")
+            status = "Mining, z"..zOffsetGoal.." now. trips left: "..tripsToDo
+            for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+                mineOreAttempt()
+                if not moveOrMineVecAvoid({x=0, y=0, z=math.floor(zOffsetGoal)}) then
+                    --print("Failed step " .. i)
+                    break
+                end
+            end
 
-        local xOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
-        print(tostring(xOffsetGoal) .. " x")
-        status = "Mining, x"..xOffsetGoal.." now. trips left: "..tripsToDo
-        for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
-            mineOreAttempt()
-            if not moveOrMineVecAvoid({x=math.floor(zOffsetGoal), y=0, z=0}) then
-                --print("Failed step " .. i)
-                break
+            local xOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
+            print(tostring(xOffsetGoal) .. " x")
+            status = "Mining, x"..xOffsetGoal.." now. trips left: "..tripsToDo
+            for i = 1, clamp((math.random(maxDistance) + 1),0,999) do
+                mineOreAttempt()
+                if not moveOrMineVecAvoid({x=math.floor(zOffsetGoal), y=0, z=0}) then
+                    --print("Failed step " .. i)
+                    break
+                end
             end
         end
+
+        returnToOrigin()
+        dropNonFuelItemsIntoChest()
+        tripsToDo = tripsToDo - 1
+        print("Completed a trip! trips left: " .. tripsToDo)
     end
 
-    returnToOrigin()
-    dropNonFuelItemsIntoChest()
-    tripsToDo = tripsToDo - 1
-    print("Completed a trip! trips left: " .. tripsToDo)
+    print("Done :) go again?")
+    input = read()
+    if input == "no" or input == "n" or input == "nah" or input == "nope" or input == "0" or input == "false" then
+        doingMining = false
+    else
+        tripsToDo = 2
+    end
 end
-
-print("Done :)")
