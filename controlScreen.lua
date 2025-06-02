@@ -20,19 +20,20 @@ if not mon then
 end
 
 local function draw()
-    for id, pos in pairs(turtles) do
-        local relX = pos.x - origin.x
-        local relZ = pos.z - origin.z
+    for id, turt in pairs(turtles) do
+        local relX = turt.x - origin.x
+        local relZ = turt.z - origin.z
+        local relY = turt.y
         lineGoal = lineGoal + 1
         mon.setCursorPos(1, lineGoal)
-        mon.write(id .. ": X=" .. relX .. " Z=" .. relZ .. "\n")
+        mon.write(id .. ": X=" .. relX .. " Y=" .. relY .. " Z=" .. relZ .. " | "..turt.status)
     end
 
     local w, h = mon.getSize()
     local squareSize = 3
-    for id, pos in pairs(turtles) do
-        local relX = (pos.glX + pos.x - 650) * 0.05
-        local relZ = (pos.glZ + pos.z - 379) * 0.05
+    for id, turt in pairs(turtles) do
+        local relX = (turt.glX + turt.x - 650) * 0.05
+        local relZ = (turt.glZ + turt.z - 379) * 0.05
 
         local startX = (math.floor((w - squareSize) / 2) + 1) + relX
         local startY = (math.floor((h - squareSize) / 2) + 1) + relZ
@@ -57,7 +58,7 @@ while true do
     mon.write("Status : ONLINE "..#turtles)
     lineGoal = 2
     if type(message) == "table" and message.id then
-        turtles[message.id] = {x = message.x, z = message.z}
+        turtles[message.id] = {x = message.x, y = message.y, z = message.z, glX = message.glX, glY = message.glY, glZ = message.glZ, status = message.status}
         draw()
     end
     -- input = read()
