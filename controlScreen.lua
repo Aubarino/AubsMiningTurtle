@@ -1,4 +1,5 @@
--- baseDisplay.lua
+-- controlScreen.lua
+-- full executon thing is wget run https://raw.githubusercontent.com/Aubarino/AubsMiningTurtle/refs/heads/main/controlScreen.lua
 
 -- Setup
 local origin = {x = 0, z = 0} -- your base reference point
@@ -8,33 +9,13 @@ rednet.open("back") -- or side of the modem
 local input = ""
 
 -- Optional monitor support
-local mon = peripheral.find("monitor")
+local mon = peripheral.wrap("left")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
 if not mon then
     print("Monitor not found!")
     return
 end
-print(peripheral.getType("right"))
-
-local side
-for _, name in pairs(peripheral.getNames()) do
-    if peripheral.getType(name) == "monitor" then
-        side = name
-        break
-    end
-end
-
-if side then
-    local mon = peripheral.wrap(side)
-    mon.setTextScale(0.5)
-    mon.clear()
-    mon.setCursorPos(1, 1)
-    mon.write("Monitor connected on side: " .. side)
-else
-    print("No monitor found. Check connection.")
-end
-
 
 local function draw()
     local display = mon or term
