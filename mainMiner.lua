@@ -1,13 +1,55 @@
 -- Position and direction tracking
 local pos = { x = 0, y = 0, z = 0 }
+local globalStartPos = { x = 0, y = 0, z = 0 }
 local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
 local downOffset = 16
 local ventures = 3
 local tripsToDo = 3
+local turtNumber = 0
+local id = "AubMiner0"
 
 local oreCheckTimer = 0
-print("version 2b3")
+print("===============================")
+print("Aub turtle miner || version 2b4")
+print("===============================")
+
+print("Enter starting pos : x y z")
+local input = read()
+
+-- Split input string into x, y, z
+local xStr, yStr, zStr = input:match("^(%-?%d+)%s+(%-?%d+)%s+(%-?%d+)$")
+if not xStr then
+    print("Invalid input. Please enter three space-separated numbers.")
+    return
+end
+print("Enter turtle number ID from 0")
+input = read()
+turtNumber = tonumber(input)
+os.setComputerLabel("AubMiner"..tonumber(input))
+id = os.getComputerLabel() or tostring(os.getComputerID())
+
+local globalStartPos = {
+    x = tonumber(xStr),
+    y = tonumber(yStr),
+    z = tonumber(zStr)
+}
+
+
+rednet.open("left") -- or whatever side the modem is on
+
+
+local function sendPosition()
+    rednet.broadcast({
+        id = id,
+        x = pos.x,
+        y = pos.y,
+        z = pos.z,
+        glX = globalStartPos.x,
+        glY = globalStartPos.y,
+        glZ = globalStartPos.z
+    }, "turtlePosData")
+end
 
 local function clamp(val, lower, upper)
     assert(val and lower and upper, "not very useful error message here")
@@ -319,6 +361,7 @@ end
 local function mineOreAttempt(directionIn)
     oreCheckTimer = oreCheckTimer + 1
     if (oreCheckTimer >= 2) then
+        sendPosition()
         local outDir = detectNearbyOreWorld(false)
         if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
             moveOrMineVecAvoid(outDir);
@@ -327,6 +370,7 @@ local function mineOreAttempt(directionIn)
                 if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
                     moveOrMineVecAvoid(outDir)
                 end
+                sendPosition()
             end
         end
         oreCheckTimer = 0
