@@ -31,8 +31,8 @@ local function draw()
     local w, h = mon.getSize()
     local squareSize = 3
     for id, pos in pairs(turtles) do
-        local relX = (pos.glX + pos.x - 650) * 0.05f
-        local relZ = (pos.glZ + pos.z - 379) * 0.05f
+        local relX = (pos.glX + pos.x - 650) * 0.05
+        local relZ = (pos.glZ + pos.z - 379) * 0.05
 
         local startX = (math.floor((w - squareSize) / 2) + 1) + relX
         local startY = (math.floor((h - squareSize) / 2) + 1) + relZ
