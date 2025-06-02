@@ -7,7 +7,7 @@ local turtles = {}
 local trails = {}
 local trailIdToSet = 0
 local stopSignal = false
-local globalStartPos {x = 0, y = 0, z = 0}
+local globalStartPos = {x = 0, y = 0, z = 0}
 rednet.open("back")
 local input = ""
 local lineGoal = 1
