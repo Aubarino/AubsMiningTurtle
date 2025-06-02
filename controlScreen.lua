@@ -11,7 +11,7 @@ local globalStartPos {x = 0, y = 0, z = 0}
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "X"
+VERSION = "Y"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
