@@ -10,7 +10,7 @@ local stopSignal = false
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "N"
+VERSION = "O"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -84,9 +84,9 @@ local function draw()
 
     mon.setBackgroundColor(colors.black)
     mon.setTextColor(colors.white)
-    mon.setCursorPos(1, 1)
+    mon.setCursorPos(1, 2)
     mon.write("Aub Turtle HQ (version "..VERSION..")")
-    lineGoal = 3
+    lineGoal = 4
 
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
@@ -122,15 +122,15 @@ local function listenForTurtles()
             }
             trailIdToSet = trailIdToSet + 1
             if trailIdToSet > 256 then trailIdToSet = 0 end
-            draw()
         else
             mon.setBackgroundColor(colors.blue)
             mon.setTextColor(colors.white)
-            mon.setCursorPos(2, 6)
+            mon.setCursorPos(2, 1)
             mon.write("-= Aub Turtle HQ (version "..VERSION..") =-")
             sleep(0.25)
         end
-        sleep(0.05)
+        draw()
+        sleep(0.1)
     end
 end
 

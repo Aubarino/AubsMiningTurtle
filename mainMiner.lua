@@ -17,7 +17,7 @@ local forceMineDeep = false
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2d1")
+print("Aub turtle miner || version 2d2")
 print("===============================")
 
 print("Enter starting pos : x y z")
@@ -350,8 +350,9 @@ end
 
 local function mineOreAttempt()
     oreCheckTimer = oreCheckTimer + 1
+    sendPosition(status)
     if oreCheckTimer >= 2 then
-        sendPosition(status)
+        --sendPosition(status)
         local outDir = detectNearbyOreWorld(false)
         if (outDir.x ~= 0 or outDir.y ~= 0 or outDir.z ~= 0) then
             moveOrMineVecAvoid(outDir)
