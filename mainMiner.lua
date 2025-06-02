@@ -436,8 +436,6 @@ local function doItAgainCheck()
     end
 end
 
-parallel.waitForAny(listenForCommand,mainMineCode,doItAgainCheck)
-
 local function mainMineCode()
 -- Main mining loop
     if (not doItAgain) then
@@ -531,3 +529,5 @@ local function mainMineCode()
         forceReturn = false
     end
 end
+
+parallel.waitForAny(listenForCommand,mainMineCode,doItAgainCheck)
