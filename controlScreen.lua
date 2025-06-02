@@ -69,7 +69,7 @@ local function draw()
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
-        mon.setTextScale(math.max(0.35 + ((turt.y / 32) * 0.2),0.05))
+        mon.setTextScale(math.max(0.35 + ((math.abs(turt.y) / 32) * -0.2),0.05))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
