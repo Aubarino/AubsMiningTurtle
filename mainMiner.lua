@@ -17,7 +17,7 @@ local forceMineDeep = false
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2d2")
+print("Aub turtle miner || version 2d4")
 print("===============================")
 
 print("Enter starting pos : x y z")
@@ -409,7 +409,7 @@ end
 
 local function listenForCommand()
     while true do
-        local _, message, protocol = rednet.receive("turtleAubCommand", 1)  -- 1s timeout
+        local _, message, protocol = rednet.receive("turtleAubCommand", 2)  -- 1s timeout
         if message and type(message) == "table" then
             if (message.title == "turtleAubReturn") then
                 forceReturn = true
@@ -417,13 +417,14 @@ local function listenForCommand()
             if (message.title == "turtleAubMineDeep") then
                 forceMineDeep = true
                 forceReturn = true
+                doItAgain = true
             end
             if (message.title == "turtleAubGo") then
                 forceReturn = false
                 doItAgain = true
             end
         end
-        sleep(0.1)
+        sleep(0.3)
     end
 end
 
@@ -460,6 +461,7 @@ local function mainMineCode()
                     break
                 end
                 if (forceReturn) then break end
+                sendPosition(status)
             end
 
             for ventureCurrent = 1, ventures do
@@ -515,6 +517,7 @@ local function mainMineCode()
             forceMineDeep = false
             status = "Going to mine deep now."
             print("Mining deep now")
+            doItAgain = true
             maxDistance = 27
             downOffset = 70
             ventures = 2

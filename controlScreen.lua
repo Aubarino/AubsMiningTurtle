@@ -10,7 +10,7 @@ local stopSignal = false
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "O"
+VERSION = "X"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
