@@ -42,6 +42,7 @@ local function draw()
     table.sort(sortedIDs)
 
     -- Draw text lines with color
+    mon.setTextScale(0.5)
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
         local relX = turt.x - origin.x
@@ -51,23 +52,24 @@ local function draw()
         local color = gradientColors[((i - 1) % #gradientColors) + 1]
         mon.setCursorPos(1, lineGoal)
         mon.setBackgroundColor(color)
-        mon.write(id .. ": X=" .. relX .. " Y=" .. relY .. " Z=" .. relZ .. " | " .. (turt.status or ""))
+        mon.write(id .. ":X=" .. relX .. "Y=" .. relY .. "Z=" .. relZ .. "|" .. (turt.status or ""))
         lineGoal = lineGoal + 1
     end
 
     -- Draw map squares
     local w, h = mon.getSize()
-    local squareSize = 2
+    local squareSize = 1
 
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
         local color = gradientColors[((i - 1) % #gradientColors) + 1]
 
-        local relX = (turt.glX + turt.x - 650) * 0.5
-        local relZ = (turt.glZ + turt.z - 379) * 0.5
+        local relX = (turt.glX + turt.x - 650) * 0.3
+        local relZ = (turt.glZ + turt.z - 379) * 0.3
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
+        mon.setTextScale(math.max(0.35 + ((turt.y / 32) * 0.2),0.05))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
@@ -84,6 +86,7 @@ while true do
     local _, message, protocol = rednet.receive("turtlePosData")
     mon.clear()
     mon.setBackgroundColor(colors.black)
+    if mon then mon.setTextScale(0.5) end
     mon.setCursorPos(1, 1)
     mon.write("Aub turtle HQ")
     mon.setCursorPos(1, 2)
