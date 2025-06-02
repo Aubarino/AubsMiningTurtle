@@ -70,14 +70,14 @@ local function draw()
 
     for i, id in ipairs(trails) do
         local trail = trails[i]
-        local color = gradientShades[math.floor(math.min(math.max(((math.abs(trail.y) / 16) * 3) + 1,4),1))]
+        local color = gradientShades[math.floor(math.min(math.max(((math.min(math.abs(trail.y),1) / 16) * 3) + 1,4),1))]
 
         local relX = (trail.x) * -0.1
         local relZ = (trail.z) * -0.1
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
-        mon.setTextScale(math.max(2.0 + ((math.abs(trail.y) / 32.0) * -1.0),0.5))
+        mon.setTextScale(math.max(2.0 + ((math.min(math.abs(trail.y),1) / 32.0) * -1.0),0.5))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
@@ -88,14 +88,14 @@ local function draw()
 
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
-        local color = gradientColors[((i - 1) % #gradientColors) + 1]
+        local color = gradientColors[math.floor((i - 1) % #gradientColors) + 1]
 
         local relX = (turt.glX + turt.x - 650) * -0.1
         local relZ = (turt.glZ + turt.z - 379) * -0.1
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
-        mon.setTextScale(math.max(2.0 + ((math.abs(turt.y) / 32.0) * -1.0),0.5))
+        mon.setTextScale(math.max(1.7 - ((math.min(math.abs(turt.y),1) / 32)),0.5))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
