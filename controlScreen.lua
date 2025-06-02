@@ -11,7 +11,6 @@ local input = ""
 local mon = peripheral.find("monitor")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
-print("Peripherals : "..peripheral.getNames().tostring())
 if not mon then
     print("Monitor not found!")
     return
