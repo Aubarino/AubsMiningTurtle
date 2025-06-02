@@ -64,12 +64,12 @@ local function draw()
         local turt = turtles[id]
         local color = gradientColors[((i - 1) % #gradientColors) + 1]
 
-        local relX = (turt.glX + turt.x - 650) * 0.3
-        local relZ = (turt.glZ + turt.z - 379) * 0.3
+        local relX = (turt.glX + turt.x - 650) * -0.1
+        local relZ = (turt.glZ + turt.z - 379) * -0.1
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
-        mon.setTextScale(math.max(1 + ((math.abs(turt.y) / 32) * -0.4),0.5))
+        mon.setTextScale(math.max(2.0 + ((math.abs(turt.y) / 32.0) * -1.0),0.5))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
