@@ -36,6 +36,7 @@ else
     print("No monitor found. Check connection.")
 end
 
+
 local function draw()
     local display = mon or term
     display.clear()
