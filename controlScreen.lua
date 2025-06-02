@@ -10,7 +10,7 @@ local stopSignal = false
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "M"
+VERSION = "N"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -123,6 +123,12 @@ local function listenForTurtles()
             trailIdToSet = trailIdToSet + 1
             if trailIdToSet > 256 then trailIdToSet = 0 end
             draw()
+        else
+            mon.setBackgroundColor(colors.blue)
+            mon.setTextColor(colors.white)
+            mon.setCursorPos(2, 6)
+            mon.write("-= Aub Turtle HQ (version "..VERSION..") =-")
+            sleep(0.25)
         end
         sleep(0.05)
     end
@@ -130,12 +136,20 @@ end
 
 -- Function: accept terminal input
 local function listenForInput()
+    term.clear()
+    lineGoal = 1
+    term.setCursorPos(1, 1)
+    term.write("Status : ONLINE")
+    term.setCursorPos(1, 2)
+    term.write("version "..VERSION)
     while not stopSignal do
+        term.setCursorPos(1, 3)
         term.setTextColor(colors.yellow)
         term.write("Command: ")
         term.setTextColor(colors.white)
         input = read()
         term.clear()
+        term.setCursorPos(1, 1)
         if (string.find(input, "return")) then
             rednet.broadcast({
                 title = "turtleAubReturn"
@@ -156,7 +170,9 @@ local function listenForInput()
         end
         if (input == "help") then
             term.write("return : makes all turtles return.")
-            term.write("mine deep : makes all turtles go 90 blocks down and mine out by 64 in all directions, risky.")
+            term.setCursorPos(1, 2)
+            term.write("mine deep : makes all turtles mine deep 90 blocks and more")
+            term.setCursorPos(1, 3)
             term.write("go : makes all the turtles mine.")
         end
     end

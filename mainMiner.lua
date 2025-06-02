@@ -17,7 +17,7 @@ local forceMineDeep = false
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2c3")
+print("Aub turtle miner || version 2d1")
 print("===============================")
 
 print("Enter starting pos : x y z")
