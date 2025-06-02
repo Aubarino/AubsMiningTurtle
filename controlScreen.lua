@@ -25,7 +25,7 @@ local gradientShades = {
     colors.white,
     colors.lightGray,
     colors.gray,
-    colors.black
+    colors.gray
 }
 
 -- Optional monitor support
@@ -71,8 +71,14 @@ local function draw()
 
     for i, trail in ipairs(trails) do
         local absY = math.abs(trail.y or 0)
-        -- Map absY from 0 to 16+ to 1..4 shades (clamp)
-        local depthIndex = math.min(#gradientShades, math.max(1, math.floor((absY / 16) * #gradientShades) + 1))
+        local maxY = 16
+
+        -- Calculate ratio from 0 to 1 (clamp)
+        local ratio = math.min(absY / maxY, 1)
+
+        -- Invert ratio so 0 -> 1, maxY -> 4 (index in gradientShades)
+        local depthIndex = math.floor((1 - ratio) * (#gradientShades - 1)) + 1
+
         local color = gradientShades[depthIndex]
 
         -- Increase scaling to 0.5 or 1 so it spreads nicely on monitor
