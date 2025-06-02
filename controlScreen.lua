@@ -18,11 +18,6 @@ if not mon then
 end
 
 local function draw()
-    local display = mon or term
-    display.clear()
-    display.setCursorPos(1, 1)
-    display.write("Aub turtle HQ\nStatus : ONLINE\n")
-
     for id, pos in pairs(turtles) do
         local relX = pos.x - origin.x
         local relZ = pos.z - origin.z
@@ -33,14 +28,18 @@ end
 -- Listen for position updates
 while not stopSignal do
     local _, message, protocol = rednet.receive("turtlePos")
+    local display = mon or term
+    display.clear()
+    display.setCursorPos(1, 1)
+    display.write("Aub turtle HQ\nStatus : ONLINE\n")
     if type(message) == "table" and message.id then
         turtles[message.id] = {x = message.x, z = message.z}
         draw()
     end
-    input = read()
-    if (input == "end") then
-        stopSignal = true
-    end
+    -- input = read()
+    -- if (input == "end") then
+    --     stopSignal = true
+    -- end
 end
 
 print("ended")
@@ -49,4 +48,3 @@ display.clear()
 display.setCursorPos(1, 1)
 display.write("Aub turtle HQ\nStatus : OFFLINE")
 print("Status : OFFLINE")
-draw()
