@@ -4,6 +4,8 @@
 -- Setup
 local origin = {x = 0, z = 0} -- your base reference point
 local turtles = {}
+local trails = {}
+local trailIdToSet = 0
 local stopSignal = false
 rednet.open("back") -- or side of the modem
 local input = ""
@@ -19,12 +21,18 @@ local gradientColors = {
     colors.blue,
     colors.purple
 }
+local gradientShades = {
+    colors.white,
+    colors.silver,
+    colors.grey,
+    colors.darkgrey
+}
 
 -- Optional monitor support
 local mon = peripheral.wrap("left")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
-print("version f")
+print("version g")
 if not mon then
     print("Monitor not found!")
     return
@@ -33,7 +41,7 @@ end
 local function draw()
     mon.clear()
     mon.setCursorPos(1, 1)
-    mon.write("Aub Turtle HQ (version f)\n")
+    mon.write("Aub Turtle HQ (version g)\n")
     lineGoal = 3
 
     -- Convert turtles to a sorted list to get consistent color order
@@ -59,6 +67,24 @@ local function draw()
     -- Draw map squares
     local w, h = mon.getSize()
     local squareSize = 1
+
+    for i, id in ipairs(trails) do
+        local trail = trails[id]
+        local color = gradientShades[math.floor(math.min(math.max((math.abs(trail.y) / 16) * 3,3),0))]
+
+        local relX = (trail.x) * -0.1
+        local relZ = (trail.z) * -0.1
+
+        local startX = math.floor((w - squareSize) / 2 + 1 + relX)
+        local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
+        mon.setTextScale(math.max(2.0 + ((math.abs(turt.y) / 32.0) * -1.0),0.5))
+
+        mon.setBackgroundColor(color)
+        for y = 0, squareSize - 1 do
+            mon.setCursorPos(startX, startY + y)
+            mon.write(string.rep(" ", squareSize))
+        end
+    end
 
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
@@ -94,6 +120,9 @@ while true do
     lineGoal = 2
     if type(message) == "table" and message.id then
         turtles[message.id] = {x = message.x, y = message.y, z = message.z, glX = message.glX, glY = message.glY, glZ = message.glZ, status = message.status}
+        trails[trailIdToSet] = {x = (message.glX + message.x - 650) , y = message.y, z = (message.glZ + message.z - 379)}
+        trailIdToSet = trailIdToSet + 1
+        if (trailIdToSet > 256) then trailIdToSet = 0 end
         draw()
     end
     -- input = read()

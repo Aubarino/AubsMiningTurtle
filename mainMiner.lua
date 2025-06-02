@@ -12,7 +12,7 @@ local status = ""
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b5")
+print("Aub turtle miner || version 2b6")
 print("===============================")
 
 print("Enter starting pos : x y z")
