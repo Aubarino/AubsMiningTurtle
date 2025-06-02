@@ -12,6 +12,7 @@ local input = ""
 local mon = peripheral.wrap("left")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
+print("version b")
 if not mon then
     print("Monitor not found!")
     return
@@ -26,8 +27,8 @@ local function draw()
 end
 
 -- Listen for position updates
-while not stopSignal do
-    local _, message, protocol = rednet.receive("turtlePos")
+while true do
+    local _, message, protocol = rednet.receive("turtlePosData")
     local display = mon or term
     display.clear()
     display.setCursorPos(1, 1)
@@ -40,6 +41,7 @@ while not stopSignal do
     -- if (input == "end") then
     --     stopSignal = true
     -- end
+    sleep(0.25)
 end
 
 print("ended")
