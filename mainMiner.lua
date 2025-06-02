@@ -17,7 +17,7 @@ local forceMineDeep = false
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2c1")
+print("Aub turtle miner || version 2c3")
 print("===============================")
 
 print("Enter starting pos : x y z")
@@ -417,97 +417,117 @@ local function listenForCommand()
                 forceMineDeep = true
                 forceReturn = true
             end
+            if (message.title == "turtleAubGo") then
+                forceReturn = false
+                doItAgain = true
+            end
         end
         sleep(0.1)
     end
 end
 
-parallel.waitForAny(listenForCommand)
+local function doItAgainCheck()
+    while true do
+        input = read()
+        if (input == "yes") then
+            doItAgain = true
+        end
+        sleep(0.5)
+    end
+end
 
+parallel.waitForAny(listenForCommand,mainMineCode,doItAgainCheck)
+
+local function mainMineCode()
 -- Main mining loop
-while true do
-    doItAgain = false
-    tripsToDo = tripsStandard
-    while (tripsToDo > 0 and not forceReturn) do
-        status = "Mining"
-        sendPosition(status)
-
-        -- Descend downOffset levels
-        for i = 1, downOffset do
-            if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
-                print("Blocked descending")
-                break
-            end
-            if (forceReturn) then break end
-        end
-
-        for ventureCurrent = 1, ventures do
-            local zOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
-            print("Mining Z direction: " .. zOffsetGoal)
-            status = "Mining, z" .. zOffsetGoal .. ". Trips left: " .. tripsToDo
-
-            for i = 1, clamp((math.random(maxDistance) + 1), 0, 999) do
-                mineOreAttempt()
-                if not moveOrMineVecAvoid({x=0, y=0, z=zOffsetGoal}) then
-                    break
-                end
-                if (forceReturn) then break end
-            end
-
-            local xOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
-            print("Mining X direction: " .. xOffsetGoal)
-            status = "Mining, x" .. xOffsetGoal .. ". Trips left: " .. tripsToDo
-
-            for i = 1, clamp((math.random(maxDistance) + 1), 0, 999) do
-                mineOreAttempt()
-                if not moveOrMineVecAvoid({x=xOffsetGoal, y=0, z=0}) then
-                    break
-                end
-                if (forceReturn) then break end
-            end
-            if (forceReturn) then break end
-        end
-
-        returnToOrigin()
-
-        -- Deposit items
-        dropNonFuelItemsIntoChest()
-
-        -- Ascend back to starting Y
-        while pos.y < 0 do
-            if not moveOrMineVecAvoid({x=0, y=1, z=0}) then
-                print("Blocked ascending")
-                break
-            end
-        end
-
-        tripsToDo = tripsToDo - 1
-    end
-    if (forceReturn) then
-        print("Commanded to return")
-        status = "Returning via command"
-        returnToOrigin()
-    end
-
-    if (forceMineDeep) then
-        forceMineDeep = false
-        status = "Going to mine deep now."
-        print("Mining deep now")
-        maxDistance = 64
-        downOffset = 90
-        ventures = 4
-    else
-        maxDistance = 20
-        downOffset = 27
-        ventures = 3
-        print("Mining complete!")
+    if (not doItAgain) then
+        print("do you want to start mining?")
         while (not doItAgain) do
-            print("want to go again?")
-            input = read()
-            if (input == "yes") then
-                doItAgain = true
-            end
+            sleep(1)
         end
     end
-    forceReturn = false
+    print("starting")
+    while true do
+        doItAgain = false
+        tripsToDo = tripsStandard
+        while (tripsToDo > 0 and not forceReturn) do
+            status = "Mining"
+            sendPosition(status)
+
+            -- Descend downOffset levels
+            for i = 1, downOffset do
+                if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
+                    print("Blocked descending")
+                    break
+                end
+                if (forceReturn) then break end
+            end
+
+            for ventureCurrent = 1, ventures do
+                local zOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
+                print("Mining Z direction: " .. zOffsetGoal)
+                status = "Mining, z" .. zOffsetGoal .. ". Trips left: " .. tripsToDo
+
+                for i = 1, clamp((math.random(maxDistance) + 1), 0, 999) do
+                    mineOreAttempt()
+                    if not moveOrMineVecAvoid({x=0, y=0, z=zOffsetGoal}) then
+                        break
+                    end
+                    if (forceReturn) then break end
+                end
+
+                local xOffsetGoal = (math.random(0, 1) == 0) and -1 or 1
+                print("Mining X direction: " .. xOffsetGoal)
+                status = "Mining, x" .. xOffsetGoal .. ". Trips left: " .. tripsToDo
+
+                for i = 1, clamp((math.random(maxDistance) + 1), 0, 999) do
+                    mineOreAttempt()
+                    if not moveOrMineVecAvoid({x=xOffsetGoal, y=0, z=0}) then
+                        break
+                    end
+                    if (forceReturn) then break end
+                end
+                if (forceReturn) then break end
+            end
+
+            returnToOrigin()
+
+            -- Deposit items
+            dropNonFuelItemsIntoChest()
+
+            -- Ascend back to starting Y
+            while pos.y < 0 do
+                if not moveOrMineVecAvoid({x=0, y=1, z=0}) then
+                    print("Blocked ascending")
+                    break
+                end
+            end
+
+            tripsToDo = tripsToDo - 1
+        end
+        if (forceReturn) then
+            print("Commanded to return")
+            status = "Returning via command"
+            returnToOrigin()
+        end
+
+        if (forceMineDeep) then
+            forceMineDeep = false
+            status = "Going to mine deep now."
+            print("Mining deep now")
+            maxDistance = 64
+            downOffset = 90
+            ventures = 4
+        else
+            maxDistance = 20
+            downOffset = 27
+            ventures = 3
+            print("Mining complete!")
+            while (not doItAgain) do
+                print("want to go again?")
+                sleep(1)
+            end
+        end
+        forceReturn = false
+    end
 end

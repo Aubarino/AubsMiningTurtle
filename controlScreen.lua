@@ -10,7 +10,7 @@ local stopSignal = false
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "L"
+VERSION = "M"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -131,7 +131,6 @@ end
 -- Function: accept terminal input
 local function listenForInput()
     while not stopSignal do
-        term.setCursorPos(1, lineGoal + 2)
         term.setTextColor(colors.yellow)
         term.write("Command: ")
         term.setTextColor(colors.white)
@@ -149,9 +148,16 @@ local function listenForInput()
             }, "turtleAubCommand")
             term.write("Commanded all to Mine Deep.")
         end
+        if (input == "go") then
+            rednet.broadcast({
+                title = "turtleAubGo"
+            }, "turtleAubCommand")
+            term.write("Commanded all turtles to start mining")
+        end
         if (input == "help") then
             term.write("return : makes all turtles return.")
             term.write("mine deep : makes all turtles go 90 blocks down and mine out by 64 in all directions, risky.")
+            term.write("go : makes all the turtles mine.")
         end
     end
 end
