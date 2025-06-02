@@ -508,17 +508,18 @@ local function mainMineCode()
             print("Commanded to return")
             status = "Returning via command"
             returnToOrigin()
+            dropNonFuelItemsIntoChest()
         end
 
         if (forceMineDeep) then
             forceMineDeep = false
             status = "Going to mine deep now."
             print("Mining deep now")
-            maxDistance = 64
-            downOffset = 90
-            ventures = 4
+            maxDistance = 27
+            downOffset = 70
+            ventures = 2
         else
-            maxDistance = 20
+            maxDistance = 18
             downOffset = 27
             ventures = 3
             print("Mining complete!")
