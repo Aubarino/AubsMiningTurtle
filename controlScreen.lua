@@ -10,6 +10,7 @@ local stopSignal = false
 rednet.open("back") -- or side of the modem
 local input = ""
 local lineGoal = 1
+VERSION = "k"
 
 local gradientColors = {
     colors.red,
@@ -35,7 +36,7 @@ if mon then
     mon.setTextColor(colors.white)
 end
 print("Status : ONLINE")
-print("version j")
+print("version "..VERSION)
 if not mon then
     print("Monitor not found!")
     return
@@ -46,25 +47,10 @@ local function draw()
     mon.setTextColor(colors.white)
     mon.setBackgroundColor(colors.black)
     mon.setCursorPos(1, 1)
-    mon.write("Aub Turtle HQ (version j)\n")
-    lineGoal = 3
 
     local sortedIDs = {}
     for id in pairs(turtles) do table.insert(sortedIDs, id) end
     table.sort(sortedIDs)
-
-    for i, id in ipairs(sortedIDs) do
-        local turt = turtles[id]
-        local relX = turt.x - origin.x
-        local relZ = turt.z - origin.z
-        local relY = turt.y
-
-        local color = gradientColors[((i - 1) % #gradientColors) + 1]
-        mon.setCursorPos(1, lineGoal)
-        mon.setBackgroundColor(color)
-        mon.write(id .. ":X=" .. relX .. "Y=" .. relY .. "Z=" .. relZ .. "|" .. (turt.status or ""))
-        lineGoal = lineGoal + 1
-    end
 
     local w, h = mon.getSize()
     local squareSize = 1
@@ -82,8 +68,8 @@ local function draw()
         local color = gradientShades[depthIndex]
 
         -- Increase scaling to 0.5 or 1 so it spreads nicely on monitor
-        local relX = trail.x * 0.5
-        local relZ = trail.z * 0.5
+        local relX = trail.x * 0.2
+        local relZ = trail.z * 0.2
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
@@ -102,8 +88,8 @@ local function draw()
         local turt = turtles[id]
         local color = gradientColors[math.floor((i - 1) % #gradientColors) + 1]
 
-        local relX = (turt.glX + turt.x - 650) * -0.1
-        local relZ = (turt.glZ + turt.z - 379) * -0.1
+        local relX = (turt.glX + turt.x - 650) * 0.2
+        local relZ = (turt.glZ + turt.z - 379) * 0.2
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
@@ -112,6 +98,25 @@ local function draw()
             mon.setCursorPos(startX, startY + y)
             mon.write(string.rep(" ", squareSize))
         end
+    end
+
+    mon.setBackgroundColor(colors.black)
+    mon.setTextColor(colors.white)
+    mon.setCursorPos(1, 1)
+    mon.write("Aub Turtle HQ (version "..VERSION..")")
+    lineGoal = 3
+
+    for i, id in ipairs(sortedIDs) do
+        local turt = turtles[id]
+        local relX = turt.x - origin.x
+        local relZ = turt.z - origin.z
+        local relY = turt.y
+
+        local color = gradientColors[((i - 1) % #gradientColors) + 1]
+        mon.setCursorPos(1, lineGoal)
+        mon.setBackgroundColor(color)
+        mon.write(id .. ":X=" .. relX .. "Y=" .. relY .. "Z=" .. relZ .. "|" .. (turt.status or ""))
+        lineGoal = lineGoal + 1
     end
 
     mon.setBackgroundColor(colors.black)
@@ -125,7 +130,7 @@ while true do
     mon.setBackgroundColor(colors.black)
     if mon then mon.setTextScale(0.5) end
     mon.setCursorPos(1, 1)
-    mon.write("Aub turtle HQ")
+    mon.write("Aub turtle HQ ("..VERSION..")")
     mon.setCursorPos(1, 2)
     mon.write("Status : ONLINE "..#turtles)
     lineGoal = 2
@@ -146,5 +151,5 @@ end
 print("ended")
 mon.clear()
 mon.setCursorPos(1, 1)
-mon.write("Aub turtle HQ | Status : OFFLINE")
+mon.write("Aub turtle HQ ("..VERSION..") | Status : OFFLINE")
 print("Status : OFFLINE")
