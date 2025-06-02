@@ -32,7 +32,7 @@ local gradientShades = {
 local mon = peripheral.wrap("left")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
-print("version g")
+print("version h")
 if not mon then
     print("Monitor not found!")
     return
@@ -41,7 +41,7 @@ end
 local function draw()
     mon.clear()
     mon.setCursorPos(1, 1)
-    mon.write("Aub Turtle HQ (version g)\n")
+    mon.write("Aub Turtle HQ (version h)\n")
     lineGoal = 3
 
     -- Convert turtles to a sorted list to get consistent color order
@@ -69,7 +69,7 @@ local function draw()
     local squareSize = 1
 
     for i, id in ipairs(trails) do
-        local trail = trails[id]
+        local trail = trails[i]
         local color = gradientShades[math.floor(math.min(math.max((math.abs(trail.y) / 16) * 3,3),0))]
 
         local relX = (trail.x) * -0.1
