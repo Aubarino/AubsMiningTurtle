@@ -24,7 +24,7 @@ local gradientColors = {
 local mon = peripheral.wrap("left")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
-print("version e")
+print("version f")
 if not mon then
     print("Monitor not found!")
     return
@@ -33,7 +33,7 @@ end
 local function draw()
     mon.clear()
     mon.setCursorPos(1, 1)
-    mon.write("Aub Turtle HQ (version e)\n")
+    mon.write("Aub Turtle HQ (version f)\n")
     lineGoal = 3
 
     -- Convert turtles to a sorted list to get consistent color order
@@ -69,7 +69,7 @@ local function draw()
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
-        mon.setTextScale(0.35 + ((math.abs(turt.y) / 32) * -0.2))
+        mon.setTextScale(math.max(1 + ((math.abs(turt.y) / 32) * -0.4),0.5))
 
         mon.setBackgroundColor(color)
         for y = 0, squareSize - 1 do
