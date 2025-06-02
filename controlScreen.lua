@@ -16,6 +16,25 @@ if not mon then
     return
 end
 print(peripheral.getType("right"))
+print peripheral.getNames()
+
+local side
+for _, name in pairs(peripheral.getNames()) do
+    if peripheral.getType(name) == "monitor" then
+        side = name
+        break
+    end
+end
+
+if side then
+    local mon = peripheral.wrap(side)
+    mon.setTextScale(0.5)
+    mon.clear()
+    mon.setCursorPos(1, 1)
+    mon.write("Monitor connected on side: " .. side)
+else
+    print("No monitor found. Check connection.")
+end
 
 local function draw()
     local display = mon or term
