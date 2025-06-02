@@ -30,9 +30,12 @@ local gradientShades = {
 
 -- Optional monitor support
 local mon = peripheral.wrap("left")
-if mon then mon.setTextScale(0.5) end
+if mon then
+    mon.setTextScale(0.5)
+    mon.setTextColor(colors.white)
+end
 print("Status : ONLINE")
-print("version i")
+print("version j")
 if not mon then
     print("Monitor not found!")
     return
@@ -40,8 +43,10 @@ end
 
 local function draw()
     mon.clear()
+    mon.setTextColor(colors.white)
+    mon.setBackgroundColor(colors.black)
     mon.setCursorPos(1, 1)
-    mon.write("Aub Turtle HQ (version i)\n")
+    mon.write("Aub Turtle HQ (version j)\n")
     lineGoal = 3
 
     local sortedIDs = {}
@@ -65,19 +70,27 @@ local function draw()
     local squareSize = 1
 
     for i, trail in ipairs(trails) do
-        local color = gradientShades[math.floor(math.min(math.max(((math.min(math.abs(trail.y),1) / 16) * 3) + 1, 4), 1))]
+        local absY = math.abs(trail.y or 0)
+        -- Map absY from 0 to 16+ to 1..4 shades (clamp)
+        local depthIndex = math.min(#gradientShades, math.max(1, math.floor((absY / 16) * #gradientShades) + 1))
+        local color = gradientShades[depthIndex]
 
-        local relX = (trail.x) * -0.1
-        local relZ = (trail.z) * -0.1
+        -- Increase scaling to 0.5 or 1 so it spreads nicely on monitor
+        local relX = trail.x * 0.5
+        local relZ = trail.z * 0.5
+
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
-        mon.setBackgroundColor(color)
-        for y = 0, squareSize - 1 do
-            mon.setCursorPos(startX, startY + y)
-            mon.write(string.rep(" ", squareSize))
+        if startX >= 1 and startX <= w and startY >= 1 and startY <= h then
+            mon.setCursorPos(startX, startY)
+            mon.setBackgroundColor(color)
+            mon.setTextColor(color) -- makes a solid color block
+            mon.write(" ") -- space fills background color fully
         end
     end
+    mon.setBackgroundColor(colors.black)
+    mon.setTextColor(colors.white)
 
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
@@ -96,6 +109,7 @@ local function draw()
     end
 
     mon.setBackgroundColor(colors.black)
+    mon.setTextColor(colors.white)
 end
 
 -- Listen for position updates
