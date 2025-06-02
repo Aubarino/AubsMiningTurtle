@@ -13,7 +13,7 @@ local lineGoal = 1
 local mon = peripheral.wrap("left")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
-print("version c")
+print("version d")
 if not mon then
     print("Monitor not found!")
     return
@@ -30,10 +30,10 @@ local function draw()
     end
 
     local w, h = mon.getSize()
-    local squareSize = 3
+    local squareSize = 2
     for id, turt in pairs(turtles) do
-        local relX = (turt.glX + turt.x - 650) * 0.05
-        local relZ = (turt.glZ + turt.z - 379) * 0.05
+        local relX = (turt.glX + turt.x - 650) * 0.5
+        local relZ = (turt.glZ + turt.z - 379) * 0.5
 
         local startX = (math.floor((w - squareSize) / 2) + 1) + relX
         local startY = (math.floor((h - squareSize) / 2) + 1) + relZ
