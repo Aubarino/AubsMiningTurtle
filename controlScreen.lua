@@ -5,13 +5,13 @@ local origin = {x = 0, z = 0} -- your base reference point
 local turtles = {}
 local stopSignal = false
 rednet.open("back") -- or side of the modem
-local input = read()
+local input = ""
 
 -- Optional monitor support
 local mon = peripheral.find("monitor")
 if mon then mon.setTextScale(0.5) end
 print("Status : ONLINE")
-print("Peripherals : "..peripheral.getNames())
+print("Peripherals : "..peripheral.getNames().tostring())
 if not mon then
     print("Monitor not found!")
     return
