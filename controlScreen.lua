@@ -10,7 +10,7 @@ local stopSignal = false
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "k"
+VERSION = "L"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -33,7 +33,6 @@ if not mon then
     return
 end
 
--- Drawing function
 local function draw()
     mon.clear()
     mon.setTextColor(colors.white)
@@ -48,21 +47,38 @@ local function draw()
     local squareSize = 1
 
     for i, trail in ipairs(trails) do
-        local absY = math.abs(trail.y or 0)
-        local maxY = 16
-        local ratio = math.min(absY / maxY, 1)
-        local depthIndex = math.floor((1 - ratio) * (#gradientShades - 1)) + 1
-        local color = gradientShades[depthIndex]
+        local color = gradientShades[math.max(math.min(math.floor(((math.min(math.abs(trail.y),1) / 16) * 3) + 1),1),4)]
+
+        -- Increase scaling to 0.5 or 1 so it spreads nicely on monitor
         local relX = trail.x * 0.2
         local relZ = trail.z * 0.2
+
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
         if startX >= 1 and startX <= w and startY >= 1 and startY <= h then
             mon.setCursorPos(startX, startY)
             mon.setBackgroundColor(color)
-            mon.setTextColor(color)
-            mon.write(" ")
+            mon.setTextColor(color) -- makes a solid color block
+            mon.write(" ") -- space fills background color fully
+        end
+    end
+    mon.setBackgroundColor(colors.black)
+    mon.setTextColor(colors.white)
+
+    for i, id in ipairs(sortedIDs) do
+        local turt = turtles[id]
+        local color = gradientColors[math.floor((i - 1) % #gradientColors) + 1]
+
+        local relX = (turt.glX + turt.x - 650) * 0.2
+        local relZ = (turt.glZ + turt.z - 379) * 0.2
+        local startX = math.floor((w - squareSize) / 2 + 1 + relX)
+        local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
+
+        mon.setBackgroundColor(color)
+        for y = 0, squareSize - 1 do
+            mon.setCursorPos(startX, startY + y)
+            mon.write(string.rep(" ", squareSize))
         end
     end
 
@@ -77,22 +93,10 @@ local function draw()
         local relX = turt.x - origin.x
         local relZ = turt.z - origin.z
         local relY = turt.y
+
         local color = gradientColors[((i - 1) % #gradientColors) + 1]
-
-        local relDispX = (turt.glX + turt.x - 650) * 0.2
-        local relDispZ = (turt.glZ + turt.z - 379) * 0.2
-        local startX = math.floor((w - squareSize) / 2 + 1 + relDispX)
-        local startY = math.floor((h - squareSize) / 2 + 1 + relDispZ)
-
-        mon.setBackgroundColor(color)
-        for y = 0, squareSize - 1 do
-            mon.setCursorPos(startX, startY + y)
-            mon.write(string.rep(" ", squareSize))
-        end
-
-        mon.setBackgroundColor(colors.black)
-        mon.setTextColor(colors.white)
         mon.setCursorPos(1, lineGoal)
+        mon.setBackgroundColor(color)
         mon.write(id .. ":X=" .. relX .. "Y=" .. relY .. "Z=" .. relZ .. "|" .. (turt.status or ""))
         lineGoal = lineGoal + 1
     end
@@ -132,19 +136,22 @@ local function listenForInput()
         term.write("Command: ")
         term.setTextColor(colors.white)
         input = read()
-        if input == "end" or input == "stop" then
-            stopSignal = true
-        elseif input:sub(1, 4) == "ping" then
-            print("Ping acknowledged!")
-        elseif input:sub(1, 4) == "say " then
-            local msg = input:sub(5)
-            rednet.broadcast({cmd = "say", message = msg}, "turtleCommands")
-            print("Broadcast: " .. msg)
-        elseif input == "broadcast stop" then
-            rednet.broadcast({cmd = "stop"}, "turtleCommands")
-            print("Sent stop command to all turtles.")
-        else
-            print("Unknown command: " .. input)
+        term.clear()
+        if (string.find(input, "return")) then
+            rednet.broadcast({
+                title = "turtleAubReturn"
+            }, "turtleAubCommand")
+            term.write("Forcing all turtles to return to origin.")
+        end
+        if (string.find(input, "mine deep")) then
+            rednet.broadcast({
+                title = "turtleAubMineDeep"
+            }, "turtleAubCommand")
+            term.write("Commanded all to Mine Deep.")
+        end
+        if (input == "help") then
+            term.write("return : makes all turtles return.")
+            term.write("mine deep : makes all turtles go 90 blocks down and mine out by 64 in all directions, risky.")
         end
     end
 end
