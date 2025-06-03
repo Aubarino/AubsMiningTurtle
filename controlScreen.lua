@@ -12,7 +12,7 @@ local globalStartPos = {x = 0, y = 0, z = 0}
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "G"
+VERSION = "K"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -76,10 +76,10 @@ local function draw()
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
         if startX >= 1 and startX <= w and startY >= 1 and startY <= h then
-            mon.setCursorPos(startX * (scaleCalc + 0.5), startY * (scaleCalc + 0.5))
+            mon.setCursorPos(startX, startY)
             mon.setBackgroundColor(colors.black)
             mon.setTextColor(color) -- makes a solid color block
-            mon.write("░") -- space fills background color fully
+            mon.write(string.char(127)) -- space fills background color fully
         end
     end
     mon.setBackgroundColor(colors.black)
@@ -97,8 +97,8 @@ local function draw()
         mon.setBackgroundColor(colors.black)
         mon.setTextColor(color)
         for y = 0, squareSize - 1 do
-            mon.setCursorPos(startX * (scaleCalc + 0.5), startY + y + (scaleCalc + 0.5))
-            mon.write(string.rep("▉", squareSize))
+            mon.setCursorPos(startX, startY + y)
+            mon.write(string.rep(string.char(143), squareSize))
         end
     end
 
