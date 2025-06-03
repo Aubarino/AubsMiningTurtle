@@ -18,29 +18,63 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2e7")
+print("Aub turtle miner || version 2e8")
 print("===============================")
+local skipReadBoot = false
 
-print("Enter starting pos : x y z")
-local input = read()
+function readDiskData()
+    for slot = 1, 16 do
+        local item = turtle.getItemDetail(slot)
+        if item and string.find(string.lower(item.name), "disk") then
+            turtle.select(slot)
 
--- Split input string into x, y, z
-local xStr, yStr, zStr = input:match("^(%-?%d+)%s+(%-?%d+)%s+(%-?%d+)$")
-if not xStr then
-    print("Invalid input. Please enter three space-separated numbers.")
-    return
+            -- Check if disk is mounted
+            if fs.exists("disk/data.lua") then
+                local f = fs.open("disk/data.lua", "r")
+                local data = textutils.unserialize(f.readAll())
+                f.close()
+
+                if data and data.turtNumber then  
+                    turtNumber = data.turtNumber
+                    id = data.id
+                    globalStartPos = data.globalStartPos
+                    skipReadBoot = true
+                else
+                    print("No valid data found on disk.")
+                end
+            else
+                print("No data file found on disk.")
+            end
+        end
+    end
 end
-print("Enter turtle number ID from 0")
-input = read()
-turtNumber = tonumber(input)
-os.setComputerLabel("AubMiner"..turtNumber)
-id = os.getComputerLabel() or tostring(os.getComputerID())
 
-globalStartPos = {
-    x = tonumber(xStr),
-    y = tonumber(yStr),
-    z = tonumber(zStr)
-}
+readDiskData()
+
+if (skipReadBoot) then
+    print("Starting data set from disk")
+else
+    print("Enter starting pos : x y z")
+    local input = read()
+
+    -- Split input string into x, y, z
+    local xStr, yStr, zStr = input:match("^(%-?%d+)%s+(%-?%d+)%s+(%-?%d+)$")
+    if not xStr then
+        print("Invalid input. Please enter three space-separated numbers.")
+        return
+    end
+    print("Enter turtle number ID from 0")
+    input = read()
+    turtNumber = tonumber(input)
+    os.setComputerLabel("AubMiner"..turtNumber)
+    id = os.getComputerLabel() or tostring(os.getComputerID())
+
+    globalStartPos = {
+        x = tonumber(xStr),
+        y = tonumber(yStr),
+        z = tonumber(zStr)
+    }
+end
 
 pos = {x = 0, y = 0, z = 0} -- relative position from globalStartPos
 
@@ -322,16 +356,35 @@ function dropNonFuelItemsIntoChest()
             if not isFuel then
                 local item = turtle.getItemDetail(slot)
                 local before = item.count
-                if turtle.drop() then
-                    local afterDetail = turtle.getItemDetail(slot)
-                    local after = afterDetail and afterDetail.count or 0
-                    if after < before then
-                        print("Dropped " .. (before - after) .. " of " .. item.name)
-                    else
-                        print("Chest could not accept: " .. item.name)
+                if (string.find(string.lower(item.name), "disk")) then
+                    -- Mount the disk if not already mounted
+                    local mounts = peripheral.getNames()
+                    local diskName = nil
+                    for _, name in ipairs(mounts) do
+                        if peripheral.getType(name) == "drive" then
+                            diskName = name
+                            break
+                        end
+                    end
+
+                    if diskName and peripheral.isPresent(diskName) then
+                        local path = "disk/data.lua"
+                        local f = fs.open(path, "w")
+                        f.write(textutils.serialize({ globalStartPos = globalStartPos, turtNumber = turtNumber, id = id }))
+                        f.close()
                     end
                 else
-                    print("Drop failed for: " .. item.name)
+                    if turtle.drop() then
+                        local afterDetail = turtle.getItemDetail(slot)
+                        local after = afterDetail and afterDetail.count or 0
+                        if after < before then
+                            print("Dropped " .. (before - after) .. " of " .. item.name)
+                        else
+                            print("Chest could not accept: " .. item.name)
+                        end
+                    else
+                        print("Drop failed for: " .. item.name)
+                    end
                 end
             else
                 local item = turtle.getItemDetail(slot)
