@@ -457,7 +457,7 @@ local function mainMineCode()
             sendPosition(status)
 
             -- Descend downOffset levels
-            for i = 1, downOffset do
+            for i = 1, downOffset + math.random(16) do
                 if not moveOrMineVecAvoid({x=0, y=-1, z=0}) then
                     print("Blocked descending")
                     break
@@ -513,11 +513,11 @@ local function mainMineCode()
             print("Mining deep now")
             doItAgain = true
             maxDistance = 27
-            downOffset = 70
+            downOffset = 32
             ventures = 2
         else
             maxDistance = 18
-            downOffset = 27
+            downOffset = 16
             ventures = 3
             print("Mining complete!")
             while (not doItAgain) do
