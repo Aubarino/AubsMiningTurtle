@@ -18,7 +18,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2e8")
+print("Aub turtle miner || version 2e9")
 print("===============================")
 local skipReadBoot = false
 
@@ -38,6 +38,7 @@ function readDiskData()
                     turtNumber = data.turtNumber
                     id = data.id
                     globalStartPos = data.globalStartPos
+                    pos = data.pos
                     skipReadBoot = true
                 else
                     print("No valid data found on disk.")
@@ -49,10 +50,27 @@ function readDiskData()
     end
 end
 
+function writeDiskData()
+    for slot = 1, 16 do
+        local item = turtle.getItemDetail(slot)
+        if item and string.find(string.lower(item.name), "disk") then
+            turtle.select(slot)
+
+            if fs.exists("disk/data.lua") then
+                local f = fs.open(path, "w")
+                f.write(textutils.serialize({ globalStartPos = globalStartPos, turtNumber = turtNumber, id = id, pos = pos }))
+                f.close()
+            else
+                print("No disk.")
+            end
+        end
+    end
+end
+
 readDiskData()
 
 if (skipReadBoot) then
-    print("Starting data set from disk")
+    print("Starting data from disk, pos: "..table.concat(pos, ", "))
 else
     print("Enter starting pos : x y z")
     local input = read()
@@ -91,6 +109,7 @@ local function sendPosition(progressStatus)
         glZ = globalStartPos.z,
         status = progressStatus
     }, "turtlePosData")
+    writeDiskData()
 end
 
 local function clamp(val, lower, upper)
@@ -357,22 +376,7 @@ function dropNonFuelItemsIntoChest()
                 local item = turtle.getItemDetail(slot)
                 local before = item.count
                 if (string.find(string.lower(item.name), "disk")) then
-                    -- Mount the disk if not already mounted
-                    local mounts = peripheral.getNames()
-                    local diskName = nil
-                    for _, name in ipairs(mounts) do
-                        if peripheral.getType(name) == "drive" then
-                            diskName = name
-                            break
-                        end
-                    end
-
-                    if diskName and peripheral.isPresent(diskName) then
-                        local path = "disk/data.lua"
-                        local f = fs.open(path, "w")
-                        f.write(textutils.serialize({ globalStartPos = globalStartPos, turtNumber = turtNumber, id = id }))
-                        f.close()
-                    end
+                    writeDiskData()
                 else
                     if turtle.drop() then
                         local afterDetail = turtle.getItemDetail(slot)
