@@ -12,7 +12,7 @@ local globalStartPos = {x = 0, y = 0, z = 0}
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "Y"
+VERSION = "T"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -61,7 +61,9 @@ local function draw()
     table.sort(sortedIDs)
 
     local w, h = mon.getSize()
-    local squareSize = math.max(zoomFactor / 0.2,1)
+    local squareSize = 1
+    local scaleCalc = (math.floor(math.min(math.max((zoomFactor / 0.1) - 0.5,0.5),5)))
+    mon.setTextScale(scaleCalc)
 
     for i, trail in ipairs(trails) do
         local color = gradientShades[math.max(math.min(math.floor(((math.min(math.abs(trail.y),1) / 16) * 3) + 1),1),4)]
@@ -74,7 +76,7 @@ local function draw()
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
         if startX >= 1 and startX <= w and startY >= 1 and startY <= h then
-            mon.setCursorPos(startX, startY)
+            mon.setCursorPos(startX * (scaleCalc + 0.5), startY * (scaleCalc + 0.5))
             mon.setBackgroundColor(colors.black)
             mon.setTextColor(color) -- makes a solid color block
             mon.write("⬚") -- space fills background color fully
@@ -95,13 +97,14 @@ local function draw()
         mon.setBackgroundColor(colors.black)
         mon.setTextColor(color)
         for y = 0, squareSize - 1 do
-            mon.setCursorPos(startX, startY + y)
+            mon.setCursorPos(startX * (scaleCalc + 0.5), startY + y + (scaleCalc + 0.5))
             mon.write(string.rep("■", squareSize))
         end
     end
 
     mon.setBackgroundColor(colors.black)
     mon.setTextColor(colors.white)
+    mon.setTextScale(0.5)
     mon.setCursorPos(2, 1)
     mon.write("-= Aub Turtle HQ (version "..VERSION..") =-")
     lineGoal = 4
