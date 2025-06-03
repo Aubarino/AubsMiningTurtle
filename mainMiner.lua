@@ -9,7 +9,7 @@ local ventures = 3
 local tripsToDo = 3
 local tripsStandard = 3
 local turtNumber = 0
-local id = "AubMiner0"
+local id = "AubMinerNIL"
 local status = ""
 local doItAgain = false
 
@@ -19,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b12")
+print("Aub turtle miner || version 2b13")
 print("===============================")
 local skipReadBoot = false
 
@@ -214,6 +214,8 @@ function calibrateDirection()
                 return false
             end
         end
+        turnLeft()
+        turnLeft()
         canCalib = true
     end
 
@@ -305,19 +307,21 @@ else
         print("Invalid input. Please enter three space-separated numbers.")
         return
     end
-    print("Enter turtle number ID from 0")
-    input = read()
-    turtNumber = tonumber(input)
-    os.setComputerLabel("AubMiner"..turtNumber)
-    id = os.getComputerLabel() or tostring(os.getComputerID())
 
     globalStartPos = {
         x = tonumber(xStr),
         y = tonumber(yStr),
         z = tonumber(zStr)
     }
-    writeDiskData()
 end
+if (id == "AubMinerNIL") then
+    print("Enter turtle number ID from 0")
+    input = read()
+    turtNumber = tonumber(input)
+    os.setComputerLabel("AubMiner"..turtNumber)
+    id = os.getComputerLabel() or tostring(os.getComputerID())
+end
+    writeDiskData()
 
 pos = {x = 0, y = 0, z = 0} -- relative position from globalStartPos
 
