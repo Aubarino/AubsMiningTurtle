@@ -15,7 +15,7 @@ local lineGoal = 1
 local symbolRepeat = 1
 local trailLimit = 2048
 local rgbSlideVal = 1
-VERSION = "K1"
+VERSION = "K2"
 
 local function loadFromDisk()
     if fs.exists("disk/data.lua") then

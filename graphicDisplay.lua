@@ -28,17 +28,18 @@ local function rotateY(p,a)
     return {x*c + z*s, y, -x*s + z*c}
 end
 
-local camDist = 3
-local fov = math.rad(70)
+local camDist = 4
+local fov = math.rad(85)
 local aspect = w/h
 local near = 0.1
+local scaleTo = 1.5
 
 local function project(p)
     local x,y,z = table.unpack(p)
     local zc = camDist - z
     if zc <= near then zc = near end
 
-    local scale = 1 / math.tan(fov / 2)
+    local scale = scaleTo / math.tan(fov / 2)
     local px = (x * scale / aspect) / zc
     local py = (y * scale) / zc
 

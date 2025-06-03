@@ -18,7 +18,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b4")
+print("Aub turtle miner || version 2b5")
 print("===============================")
 local skipReadBoot = false
 
@@ -517,7 +517,7 @@ local function returnToOrigin()
     print("Returning to origin...")
     status = "Returning"
 
-    while (pos.x ~= 0 and pos.y ~= 0 and pos.z ~= 0) do
+    while (pos.x ~= 0 or pos.y ~= 0 or pos.z ~= 0) do
         while pos.x ~= 0 do
             mineOreAttempt()
             local step = (pos.x > 0) and -1 or 1
