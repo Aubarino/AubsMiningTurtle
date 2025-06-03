@@ -173,6 +173,16 @@ local function rawIsUnbreakable(data)
     return false
 end
 
+local function turnRight()
+    turtle.turnRight()
+    dir = (dir + 1) % 4
+end
+
+local function turnLeft()
+    turtle.turnLeft()
+    dir = (dir + 3) % 4
+end
+
 function calibrateDirection()
     print("Calibrating direction using GPS...")
     local x1, y1, z1 = gps.locate(3)
@@ -330,16 +340,6 @@ local function tryRefuel()
     end
     print("Out of fuel!")
     return false
-end
-
-local function turnRight()
-    turtle.turnRight()
-    dir = (dir + 1) % 4
-end
-
-local function turnLeft()
-    turtle.turnLeft()
-    dir = (dir + 3) % 4
 end
 
 local function faceDirection(targetDir)
