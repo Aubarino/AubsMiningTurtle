@@ -1,7 +1,7 @@
 -- spinningCube.lua
-local mon = peripheral.wrap(left)
+local mon = peripheral.wrap("left")
 if not mon then
-    print(No monitor found on the left.)
+    print("No monitor found on the left.")
     return
 end
 
