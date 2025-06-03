@@ -61,7 +61,7 @@ local function draw()
     table.sort(sortedIDs)
 
     local w, h = mon.getSize()
-    local squareSize = 1
+    local squareSize = 2
     local scaleCalc = (math.floor(math.min(math.max((zoomFactor / 0.1) - 0.5,0.5),5)))
     --mon.setTextScale(0.5)
 
@@ -79,7 +79,7 @@ local function draw()
             mon.setCursorPos(startX * (scaleCalc + 0.5), startY * (scaleCalc + 0.5))
             mon.setBackgroundColor(colors.black)
             mon.setTextColor(color) -- makes a solid color block
-            mon.write("⬚") -- space fills background color fully
+            mon.write("▒") -- space fills background color fully
         end
     end
     mon.setBackgroundColor(colors.black)
@@ -98,7 +98,7 @@ local function draw()
         mon.setTextColor(color)
         for y = 0, squareSize - 1 do
             mon.setCursorPos(startX * (scaleCalc + 0.5), startY + y + (scaleCalc + 0.5))
-            mon.write(string.rep("■", squareSize))
+            mon.write(string.rep("█", squareSize))
         end
     end
 
