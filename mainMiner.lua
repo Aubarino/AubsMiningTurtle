@@ -19,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b8")
+print("Aub turtle miner || version 2b9")
 print("===============================")
 local skipReadBoot = false
 
@@ -164,6 +164,7 @@ function calibrateDirection()
     end
 
     -- Try to move forward
+    turtle.dig()
     if not turtle.forward() then
         print("Unable to move forward for calibration.")
         return false
@@ -248,7 +249,11 @@ if not calibrateDirection() then
 end
 if not syncPos(true) then
     print("Warning: GPS sync failed")
+else
+    globalStartPos = truePos
+    writeDiskData()
 end
+syncPos(true)
 
 rednet.open("left") -- or whatever side the modem is on
 
