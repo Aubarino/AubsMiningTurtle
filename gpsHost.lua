@@ -20,7 +20,7 @@ rednet.open(modemSide)
 print("📡 Modem opened on side: " .. modemSide)
 
 -- Start GPS hosting
-local success = gps.host()
+local success = shell.run("gps", "host")
 if success then
     print("✅ GPS Host is now running.")
     print("🛰 Waiting for location requests...")
