@@ -133,7 +133,7 @@ local function draw()
     mon.setBackgroundColor(colors.black)
     mon.setTextColor(gradientColors[rgbSlideVal])
     rgbSlideVal = rgbSlideVal + 1
-    if (rgbSlideVal > #gradientColors) rgbSlideVal = 1
+    if (rgbSlideVal > #gradientColors) then rgbSlideVal = 1 end
     mon.setCursorPos(2, 1)
     symbolRepeat = symbolRepeat + 1
     if symbolRepeat > #turtSymbols then symbolRepeat = 1 end
