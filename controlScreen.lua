@@ -6,6 +6,7 @@ local origin = {x = 0, z = 0}
 local turtles = {}
 local trails = {}
 local trailIdToSet = 0
+local zoomFactor = 0.2
 local stopSignal = false
 local globalStartPos = {x = 0, y = 0, z = 0}
 rednet.open("back")
@@ -60,23 +61,23 @@ local function draw()
     table.sort(sortedIDs)
 
     local w, h = mon.getSize()
-    local squareSize = 1
+    local squareSize = math.max(zoomFactor / 0.2,1)
 
     for i, trail in ipairs(trails) do
         local color = gradientShades[math.max(math.min(math.floor(((math.min(math.abs(trail.y),1) / 16) * 3) + 1),1),4)]
 
         -- Increase scaling to 0.5 or 1 so it spreads nicely on monitor
-        local relX = trail.x * 0.2
-        local relZ = trail.z * 0.2
+        local relX = trail.x * zoomFactor
+        local relZ = trail.z * zoomFactor
 
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
         if startX >= 1 and startX <= w and startY >= 1 and startY <= h then
             mon.setCursorPos(startX, startY)
-            mon.setBackgroundColor(color)
+            mon.setBackgroundColor(colors.black)
             mon.setTextColor(color) -- makes a solid color block
-            mon.write(" ") -- space fills background color fully
+            mon.write("⬚") -- space fills background color fully
         end
     end
     mon.setBackgroundColor(colors.black)
@@ -86,15 +87,16 @@ local function draw()
         local turt = turtles[id]
         local color = gradientColors[math.floor((i - 1) % #gradientColors) + 1]
 
-        local relX = (turt.glX + turt.x - globalStartPos.x) * 0.2
-        local relZ = (turt.glZ + turt.z - globalStartPos.z) * 0.2
+        local relX = (turt.glX + turt.x - globalStartPos.x) * zoomFactor
+        local relZ = (turt.glZ + turt.z - globalStartPos.z) * zoomFactor
         local startX = math.floor((w - squareSize) / 2 + 1 + relX)
         local startY = math.floor((h - squareSize) / 2 + 1 + relZ)
 
-        mon.setBackgroundColor(color)
+        mon.setBackgroundColor(colors.black)
+        mon.setTextColor(color)
         for y = 0, squareSize - 1 do
             mon.setCursorPos(startX, startY + y)
-            mon.write(string.rep(" ", squareSize))
+            mon.write(string.rep("■", squareSize))
         end
     end
 
@@ -178,12 +180,24 @@ local function listenForInput()
             }, "turtleAubCommand")
             term.write("Commanded all turtles to start mining")
         end
+        if (input == "zoom in") then
+            zoomFactor = math.max(zoomFactor - 0.1,0.1)
+            term.write("Zoomed in, zoom at "..zoomFactor)
+        end
+        if (input == "zoom out") then
+            zoomFactor = math.max(zoomFactor + 0.1,0.1)
+            term.write("Zoomed out, zoom at "..zoomFactor)
+        end
         if (input == "help") then
             term.write("return : makes all turtles return.")
             term.setCursorPos(1, 5)
             term.write("mine deep : makes all turtles mine deep 90 blocks and more")
             term.setCursorPos(1, 6)
             term.write("go : makes all the turtles mine.")
+            term.setCursorPos(1, 7)
+            term.write("zoom in : zooms in")
+            term.setCursorPos(1, 8)
+            term.write("zoom out : zooms out")
         end
     end
 end
