@@ -19,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b7")
+print("Aub turtle miner || version 2b8")
 print("===============================")
 local skipReadBoot = false
 
@@ -155,6 +155,48 @@ function writeDiskData()
     turtle.select(originalSlot)
 end
 
+function calibrateDirection()
+    print("Calibrating direction using GPS...")
+    local x1, y1, z1 = gps.locate(3)
+    if not x1 then
+        print("GPS locate failed.")
+        return false
+    end
+
+    -- Try to move forward
+    if not turtle.forward() then
+        print("Unable to move forward for calibration.")
+        return false
+    end
+
+    local x2, y2, z2 = gps.locate(3)
+    turtle.back()
+
+    if not x2 then
+        print("Second GPS locate failed.")
+        return false
+    end
+
+    local dx, dz = x2 - x1, z2 - z1
+
+    if dx == 0 and dz == -1 then
+        dir = 0 -- North
+    elseif dx == 1 and dz == 0 then
+        dir = 1 -- East
+    elseif dx == 0 and dz == 1 then
+        dir = 2 -- South
+    elseif dx == -1 and dz == 0 then
+        dir = 3 -- West
+    else
+        print("Unclear movement direction.")
+        return false
+    end
+
+    print("Direction calibrated. Facing: " ..
+        ({ "North", "East", "South", "West" })[dir + 1])
+    return true
+end
+
 local function syncPos(doPrint)
     local x, y, z = gps.locate(5)  -- 5-second timeout
     if x then
@@ -162,7 +204,8 @@ local function syncPos(doPrint)
         truePos.y = y
         truePos.z = z
         pos = {x = truePos.x - globalStartPos.x,y = truePos.y - globalStartPos.y,z = truePos.z - globalStartPos.z}
-        if (doPrint) then print(string.format("pos synced: (%.1f, %.1f, %.1f)", x, y, z)) end
+        if (doPrint) then print(string.format("pos synced: (%.1f, %.1f, %.1f)", truePos.x, truePos.y, truePos.z)) end
+        if (doPrint) then print(string.format("predicted pos : (%.1f, %.1f, %.1f)", pos.x, pos.y, pos.z)) end
         return true
     else
         if (doPrint) then print("failed to GPS.") end
@@ -200,6 +243,9 @@ end
 
 pos = {x = 0, y = 0, z = 0} -- relative position from globalStartPos
 
+if not calibrateDirection() then
+    print("Failed to calibrate direction.")
+end
 if not syncPos(true) then
     print("Warning: GPS sync failed")
 end
