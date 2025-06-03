@@ -303,8 +303,10 @@ end
 if not syncPos(true) then
     print("Warning: GPS sync failed")
 else
-    globalStartPos = truePos
-    writeDiskData()
+    if not skipReadBoot then
+        globalStartPos = truePos
+        writeDiskData()
+    end
 end
 syncPos(true)
 
