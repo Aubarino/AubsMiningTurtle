@@ -1,188 +1,105 @@
-local mon = peripheral.wrap("left")
-if not mon then
-    print("Monitor on left not found")
-    return
-end
+-- 3D Cube Renderer on Advanced Monitor
 
+local mon = peripheral.wrap("left")
 mon.setTextScale(0.5)
 local w, h = mon.getSize()
+local centerX, centerY = math.floor(w/2), math.floor(h/2)
 
--- Cube vertices (x,y,z)
-local vertices = {
-    {-1, -1, -1},
-    { 1, -1, -1},
-    { 1,  1, -1},
-    {-1,  1, -1},
-    {-1, -1,  1},
-    { 1, -1,  1},
-    { 1,  1,  1},
-    {-1,  1,  1},
+local cubeSize = 6
+local cube = {
+    {-1, -1, -1}, {1, -1, -1}, {1, 1, -1}, {-1, 1, -1},
+    {-1, -1, 1},  {1, -1, 1},  {1, 1, 1},  {-1, 1, 1}
 }
 
--- Faces with vertex indices (6 faces)
 local faces = {
-    {1, 2, 3, 4}, -- back (-z)
-    {5, 6, 7, 8}, -- front (+z)
-    {1, 5, 8, 4}, -- left (-x)
-    {2, 6, 7, 3}, -- right (+x)
-    {4, 3, 7, 8}, -- top (+y)
-    {1, 2, 6, 5}, -- bottom (-y)
+    {1, 2, 3, 4, "A"}, -- back
+    {5, 6, 7, 8, "B"}, -- front
+    {1, 5, 8, 4, "C"}, -- left
+    {2, 6, 7, 3, "D"}, -- right
+    {4, 3, 7, 8, "E"}, -- top
+    {1, 2, 6, 5, "F"}  -- bottom
 }
 
--- Face colors (using basic colors supported)
-local faceColors = {
-    colors.red,
-    colors.green,
-    colors.blue,
-    colors.yellow,
-    colors.cyan,
-    colors.magenta
-}
+local function rotate(v, ax, ay)
+    local x, y, z = v[1], v[2], v[3]
+    local cosx, sinx = math.cos(ax), math.sin(ax)
+    local cosy, siny = math.cos(ay), math.sin(ay)
 
--- Rotation functions
-local function rotateX(point, angle)
-    local x, y, z = table.unpack(point)
-    local cosA = math.cos(angle)
-    local sinA = math.sin(angle)
-    local y2 = y * cosA - z * sinA
-    local z2 = y * sinA + z * cosA
-    return {x, y2, z2}
+    y, z = y * cosx - z * sinx, y * sinx + z * cosx
+    x, z = x * cosy + z * siny, -x * siny + z * cosy
+    return {x, y, z}
 end
 
-local function rotateY(point, angle)
-    local x, y, z = table.unpack(point)
-    local cosA = math.cos(angle)
-    local sinA = math.sin(angle)
-    local x2 = x * cosA + z * sinA
-    local z2 = -x * sinA + z * cosA
-    return {x2, y, z2}
+local function project(v)
+    local scale = 8 / (v[3] + 6)
+    return {
+        x = math.floor(centerX + v[1] * scale * cubeSize),
+        y = math.floor(centerY - v[2] * scale * cubeSize),
+        z = v[3]
+    }
 end
 
--- Simple orthographic projection (ignore z for position)
-local function project(point)
-    local x, y, z = table.unpack(point)
-    -- scale and translate to monitor center
-    local scale = 10
-    local px = math.floor(w/2 + x * scale)
-    local py = math.floor(h/2 - y * scale) -- y flipped for screen coords
-    return px, py, z
-end
-
--- Draw a line (Bresenham)
-local function drawLine(x0, y0, x1, y1)
-    local dx = math.abs(x1 - x0)
-    local dy = math.abs(y1 - y0)
-    local sx = x0 < x1 and 1 or -1
-    local sy = y0 < y1 and 1 or -1
-    local err = dx - dy
-
-    while true do
-        if x0 >=1 and x0 <= w and y0 >= 1 and y0 <= h then
-            mon.setCursorPos(x0, y0)
-            mon.write("#")
-        end
-        if x0 == x1 and y0 == y1 then break end
-        local e2 = 2 * err
-        if e2 > -dy then
-            err = err - dy
-            x0 = x0 + sx
-        end
-        if e2 < dx then
-            err = err + dx
-            y0 = y0 + sy
-        end
-    end
-end
-
--- Draw polygon edges from projected vertices
-local function drawFace(projectedVerts, color)
-    mon.setTextColor(color)
-    local n = #projectedVerts
-    for i=1,n do
-        local x0, y0 = projectedVerts[i][1], projectedVerts[i][2]
-        local x1, y1 = projectedVerts[(i % n) + 1][1], projectedVerts[(i % n) + 1][2]
-        drawLine(x0, y0, x1, y1)
-    end
-end
-
--- Calculate face normal for backface culling
-local function faceNormal(faceVerts)
-    local function vecSub(a,b)
-        return {a[1]-b[1], a[2]-b[2], a[3]-b[3]}
-    end
-    local function cross(a,b)
-        return {
-            a[2]*b[3]-a[3]*b[2],
-            a[3]*b[1]-a[1]*b[3],
-            a[1]*b[2]-a[2]*b[1]
-        }
-    end
-    local function normalize(v)
-        local len = math.sqrt(v[1]^2 + v[2]^2 + v[3]^2)
-        return {v[1]/len, v[2]/len, v[3]/len}
-    end
-    local a = faceVerts[1]
-    local b = faceVerts[2]
-    local c = faceVerts[3]
-    local ab = vecSub(b,a)
-    local ac = vecSub(c,a)
-    local n = cross(ab, ac)
-    return normalize(n)
-end
-
--- Dot product
-local function dot(a,b)
-    return a[1]*b[1] + a[2]*b[2] + a[3]*b[3]
-end
-
--- Main loop
-local angleX, angleY = 0, 0
-
-while true do
+local function drawCube(angleX, angleY)
     mon.clear()
-    local rotatedVerts = {}
-
-    -- Rotate all vertices
-    for i, v in ipairs(vertices) do
-        local rx = rotateX(v, angleX)
-        local ry = rotateY(rx, angleY)
-        rotatedVerts[i] = ry
+    local points3D = {}
+    for i = 1, #cube do
+        points3D[i] = rotate(cube[i], angleX, angleY)
     end
 
-    -- Project vertices
-    local projectedVerts = {}
-    for i, v in ipairs(rotatedVerts) do
-        projectedVerts[i] = {project(v)}
+    local projected = {}
+    for i = 1, #points3D do
+        projected[i] = project(points3D[i])
     end
 
-    -- Draw faces sorted by average Z (Painter’s algorithm)
-    local faceDepths = {}
-    for i, face in ipairs(faces) do
-        local avgZ = 0
-        local verts = {}
-        for j, vi in ipairs(face) do
-            avgZ = avgZ + rotatedVerts[vi][3]
-            verts[j] = rotatedVerts[vi]
+    local visibleFaces = {}
+    for _, face in ipairs(faces) do
+        local p1, p2, p3 = points3D[face[1]], points3D[face[2]], points3D[face[3]]
+        local ux, uy, uz = p2[1]-p1[1], p2[2]-p1[2], p2[3]-p1[3]
+        local vx, vy, vz = p3[1]-p1[1], p3[2]-p1[2], p3[3]-p1[3]
+        local nx, ny, nz = uy*vz - uz*vy, uz*vx - ux*vz, ux*vy - uy*vx
+
+        if nz < 0 then
+            local avgZ = (points3D[face[1]][3] + points3D[face[2]][3] + points3D[face[3]][3] + points3D[face[4]][3]) / 4
+            table.insert(visibleFaces, {face, avgZ})
         end
-        avgZ = avgZ / #face
-        table.insert(faceDepths, {index=i, avgZ=avgZ, verts=verts})
     end
-    table.sort(faceDepths, function(a,b) return a.avgZ > b.avgZ end) -- draw farthest first
 
-    -- Draw visible faces only (backface culling)
-    for _, fd in ipairs(faceDepths) do
-        local normal = faceNormal(fd.verts)
-        if dot(normal, {0,0,1}) < 0 then -- facing camera
-            local face = faces[fd.index]
-            local projVerts = {}
-            for j, vi in ipairs(face) do
-                projVerts[j] = projectedVerts[vi]
+    table.sort(visibleFaces, function(a, b) return a[2] < b[2] end)
+
+    for _, item in ipairs(visibleFaces) do
+        local face = item[1]
+        local sym = face[5]
+        local pts = {}
+        for i = 1, 4 do
+            table.insert(pts, projected[face[i]])
+        end
+
+        local minX, maxX = math.huge, -math.huge
+        local minY, maxY = math.huge, -math.huge
+        for _, p in ipairs(pts) do
+            if p.x < minX then minX = p.x end
+            if p.x > maxX then maxX = p.x end
+            if p.y < minY then minY = p.y end
+            if p.y > maxY then maxY = p.y end
+        end
+
+        for y = minY, maxY do
+            if y >= 1 and y <= h then
+                for x = minX, maxX do
+                    if x >= 1 and x <= w then
+                        mon.setCursorPos(x, y)
+                        mon.write(sym)
+                    end
+                end
             end
-            drawFace(projVerts, faceColors[fd.index])
         end
     end
+end
 
-    angleX = angleX + 0.03
-    angleY = angleY + 0.05
-    sleep(0.05)
+local angleX, angleY = 0, 0
+while true do
+    drawCube(angleX, angleY)
+    angleX = angleX + 0.05
+    angleY = angleY + 0.03
+    sleep(0.1)
 end
