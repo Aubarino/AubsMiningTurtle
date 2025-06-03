@@ -19,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b9")
+print("Aub turtle miner || version 2b10")
 print("===============================")
 local skipReadBoot = false
 
@@ -163,39 +163,62 @@ function calibrateDirection()
         return false
     end
 
+    local canCalib = false
     -- Try to move forward
-    turtle.dig()
-    if not turtle.forward() then
-        print("Unable to move forward for calibration.")
-        return false
+    if (not rawIsUnbreakable(turtle.inspect())) then
+        turtle.dig()
+        if not turtle.forward() then
+            print("Unable to move forward for calibration.")
+            return false
+        end
+        canCalib = true
+    else
+        turnRight()
+        turnRight()
+        if (rawIsUnbreakable(turtle.inspect())) then
+            print("blocked from calibration!")
+        else
+            turtle.dig()
+            if not turtle.forward() then
+                print("Unable to move forward for calibration.")
+                return false
+            end
+        end
+        canCalib = true
     end
 
     local x2, y2, z2 = gps.locate(3)
-    turtle.back()
-
-    if not x2 then
-        print("Second GPS locate failed.")
-        return false
+    if (canCalib) then
+        turtle.back()
     end
 
-    local dx, dz = x2 - x1, z2 - z1
+    if (canCalib) then
+        if not x2 then
+            print("Second GPS locate failed.")
+            return false
+        end
 
-    if dx == 0 and dz == -1 then
-        dir = 0 -- North
-    elseif dx == 1 and dz == 0 then
-        dir = 1 -- East
-    elseif dx == 0 and dz == 1 then
-        dir = 2 -- South
-    elseif dx == -1 and dz == 0 then
-        dir = 3 -- West
+        local dx, dz = x2 - x1, z2 - z1
+
+        if dx == 0 and dz == -1 then
+            dir = 0 -- North
+        elseif dx == 1 and dz == 0 then
+            dir = 1 -- East
+        elseif dx == 0 and dz == 1 then
+            dir = 2 -- South
+        elseif dx == -1 and dz == 0 then
+            dir = 3 -- West
+        else
+            print("Unclear movement direction.")
+            return false
+        end
+
+        print("Direction calibrated. Facing: " ..
+            ({ "North", "East", "South", "West" })[dir + 1])
+        return true
     else
-        print("Unclear movement direction.")
         return false
     end
-
-    print("Direction calibrated. Facing: " ..
-        ({ "North", "East", "South", "West" })[dir + 1])
-    return true
 end
 
 local function syncPos(doPrint)
@@ -332,6 +355,10 @@ local function isBlockUnbreakable(directionVector)
     end
     if not success then return false end
 
+    return(rawIsUnbreakable(data))
+end
+
+local function rawIsUnbreakable(data)
     if data.tags then
         for _, tag in ipairs(data.tags) do
             if (tag == "minecraft:unbreakable" or tag == "unbreakable") and tag ~= "minecraft:air" then
@@ -346,7 +373,6 @@ local function isBlockUnbreakable(directionVector)
             return true
         end
     end
-
     return false
 end
 
