@@ -19,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b11")
+print("Aub turtle miner || version 2b12")
 print("===============================")
 local skipReadBoot = false
 
@@ -263,6 +263,7 @@ function syncPos()
                 z = truePos.z
             }
             print("Setting globalStartPos to: ", textutils.serialize(globalStartPos))
+            skipReadBoot = true
             writeDiskData()  -- Save it so it's persistent
         end
 
