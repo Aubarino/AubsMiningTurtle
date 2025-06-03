@@ -19,7 +19,7 @@ local faces = {
     {2,3,7,6}, -- right (+x)
 }
 
-local faceFill = {"f","e","d","b","9","5"}
+local faceFill = {"4","e","d","b","9","5"}
 
 local function rotateX(p,a)
     local x,y,z=table.unpack(p)
