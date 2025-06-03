@@ -155,6 +155,24 @@ function writeDiskData()
     turtle.select(originalSlot)
 end
 
+local function rawIsUnbreakable(data)
+    if data.tags then
+        for _, tag in ipairs(data.tags) do
+            if (tag == "minecraft:unbreakable" or tag == "unbreakable") and tag ~= "minecraft:air" then
+                return true
+            end
+        end
+    end
+
+    if data.name then
+        local nameLower = string.lower(data.name)
+        if nameLower:find("chest") or nameLower:find("turtle") or nameLower:find("furnace") or nameLower:find("dropper") then
+            return true
+        end
+    end
+    return false
+end
+
 function calibrateDirection()
     print("Calibrating direction using GPS...")
     local x1, y1, z1 = gps.locate(3)
@@ -356,24 +374,6 @@ local function isBlockUnbreakable(directionVector)
     if not success then return false end
 
     return(rawIsUnbreakable(data))
-end
-
-local function rawIsUnbreakable(data)
-    if data.tags then
-        for _, tag in ipairs(data.tags) do
-            if (tag == "minecraft:unbreakable" or tag == "unbreakable") and tag ~= "minecraft:air" then
-                return true
-            end
-        end
-    end
-
-    if data.name then
-        local nameLower = string.lower(data.name)
-        if nameLower:find("chest") or nameLower:find("turtle") or nameLower:find("furnace") or nameLower:find("dropper") then
-            return true
-        end
-    end
-    return false
 end
 
 function detectNearbyOreWorld(doBack)
