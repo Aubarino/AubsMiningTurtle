@@ -18,137 +18,139 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b3")
+print("Aub turtle miner || version 2b4")
 print("===============================")
 local skipReadBoot = false
 
 function readDiskData()
     local originalSlot = turtle.getSelectedSlot()
-    
-    -- Save state
-    local function faceDirection()
-        for i = 1, 4 do
-            turtle.turnLeft()
-            local success, data = turtle.inspect()
-            if success and data.name ~= "minecraft:air" then return end
-        end
-    end
-    faceDirection()
 
-    -- Find disk drive and place it
+    -- Clear and place disk drive above
+    turtle.digUp()
+    local drivePlaced = false
     for slot = 1, 16 do
         local item = turtle.getItemDetail(slot)
         if item and string.find(item.name, "disk_drive") then
             turtle.select(slot)
             if turtle.placeUp() then
-                print("Disk drive placed.")
+                drivePlaced = true
                 break
-            else
-                print("Failed to place disk drive.")
-                return
             end
         end
     end
 
-    -- Find disk and insert
+    if not drivePlaced then
+        print("No disk drive available.")
+        turtle.select(originalSlot)
+        return
+    end
+
+    -- Insert floppy disk
+    local diskInserted = false
     for slot = 1, 16 do
         local item = turtle.getItemDetail(slot)
         if item and string.find(string.lower(item.name), "disk") then
             turtle.select(slot)
             if turtle.dropUp() then
-                print("Disk inserted.")
-                sleep(1) -- allow mount
-                if fs.exists("disk/data.lua") then
-                    local f = fs.open("disk/data.lua", "r")
-                    local data = textutils.unserialize(f.readAll())
-                    f.close()
-
-                    if data then
-                        turtNumber = data.turtNumber
-                        id = data.id
-                        globalStartPos = data.globalStartPos
-                        pos = data.pos
-                        skipReadBoot = true
-                        print("Data read from disk.")
-                    else
-                        print("Invalid data on disk.")
-                    end
-                else
-                    print("No data.lua on disk.")
-                end
-
-                -- Retrieve disk
-                turtle.suckUp()
+                diskInserted = true
                 break
             end
         end
     end
 
-    -- Break disk drive
-    turtle.digUp()
+    if not diskInserted then
+        print("No floppy disk found.")
+        turtle.digUp()
+        turtle.select(originalSlot)
+        return
+    end
 
-    -- Restore slot
+    sleep(1.5) -- wait for disk to mount
+
+    if fs.exists("disk/data.lua") then
+        local f = fs.open("disk/data.lua", "r")
+        local data = textutils.unserialize(f.readAll())
+        f.close()
+
+        if data then
+            turtNumber = data.turtNumber
+            id = data.id
+            globalStartPos = data.globalStartPos
+            pos = data.pos
+            skipReadBoot = true
+            print("Disk data loaded.")
+        else
+            print("Disk found, but data is invalid.")
+        end
+    else
+        print("No data.lua on disk.")
+    end
+
+    -- Retrieve disk and clean up
+    turtle.suckUp()
+    turtle.digUp()
     turtle.select(originalSlot)
 end
 
 function writeDiskData()
     local originalSlot = turtle.getSelectedSlot()
-    
-    -- Save state
-    local function faceDirection()
-        for i = 1, 4 do
-            turtle.turnLeft()
-            local success, data = turtle.inspect()
-            if success and data.name ~= "minecraft:air" then return end
-        end
-    end
-    faceDirection()
 
-    -- Find disk drive and place it
+    -- Clear and place disk drive above
+    turtle.digUp()
+    local drivePlaced = false
     for slot = 1, 16 do
         local item = turtle.getItemDetail(slot)
         if item and string.find(item.name, "disk_drive") then
             turtle.select(slot)
             if turtle.placeUp() then
-                print("Disk drive placed.")
+                drivePlaced = true
                 break
-            else
-                print("Failed to place disk drive.")
-                return
             end
         end
     end
 
-    -- Find disk and insert
+    if not drivePlaced then
+        print("No disk drive available.")
+        turtle.select(originalSlot)
+        return
+    end
+
+    -- Insert floppy disk
+    local diskInserted = false
     for slot = 1, 16 do
         local item = turtle.getItemDetail(slot)
         if item and string.find(string.lower(item.name), "disk") then
             turtle.select(slot)
             if turtle.dropUp() then
-                print("Disk inserted.")
-                sleep(1) -- allow mount
-                local path = "disk/data.lua"
-                local f = fs.open(path, "w")
-                f.write(textutils.serialize({
-                    globalStartPos = globalStartPos,
-                    turtNumber = turtNumber,
-                    id = id,
-                    pos = pos
-                }))
-                f.close()
-                print("Data written to disk.")
-
-                -- Retrieve disk
-                turtle.suckUp()
+                diskInserted = true
                 break
             end
         end
     end
 
-    -- Break disk drive
-    turtle.digUp()
+    if not diskInserted then
+        print("No floppy disk found.")
+        turtle.digUp()
+        turtle.select(originalSlot)
+        return
+    end
 
-    -- Restore slot
+    sleep(1.5) -- wait for disk to mount
+
+    -- Write data
+    local f = fs.open("disk/data.lua", "w")
+    f.write(textutils.serialize({
+        globalStartPos = globalStartPos,
+        turtNumber = turtNumber,
+        id = id,
+        pos = pos
+    }))
+    f.close()
+    print("Data written to disk.")
+
+    -- Retrieve disk and clean up
+    turtle.suckUp()
+    turtle.digUp()
     turtle.select(originalSlot)
 end
 
@@ -195,7 +197,6 @@ local function sendPosition(progressStatus)
         glZ = globalStartPos.z,
         status = progressStatus
     }, "turtlePosData")
-    writeDiskData()
 end
 
 local function clamp(val, lower, upper)
