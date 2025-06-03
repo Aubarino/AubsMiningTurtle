@@ -1,5 +1,6 @@
 -- Position and direction tracking
 local pos = { x = 0, y = 0, z = 0 }
+local truePos = { x = 0, y = 0, z = 0 }
 local globalStartPos = { x = 0, y = 0, z = 0 }
 local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
@@ -18,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b5")
+print("Aub turtle miner || version 2b6")
 print("===============================")
 local skipReadBoot = false
 
@@ -154,6 +155,20 @@ function writeDiskData()
     turtle.select(originalSlot)
 end
 
+function syncPos()
+    local x, y, z = gps.locate(5)  -- 5-second timeout
+    if x then
+        truePos.x = x
+        truePos.y = y
+        truePos.z = z
+        print(string.format("pos synced: (%.1f, %.1f, %.1f)", x, y, z))
+        return true
+    else
+        print("failed to GPS.")
+        return false
+    end
+end
+
 readDiskData()
 
 if (skipReadBoot) then
@@ -183,6 +198,10 @@ else
 end
 
 pos = {x = 0, y = 0, z = 0} -- relative position from globalStartPos
+
+if not syncPos() then
+    print("Warning: GPS sync failed")
+end
 
 rednet.open("left") -- or whatever side the modem is on
 
