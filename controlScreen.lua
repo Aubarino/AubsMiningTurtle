@@ -12,7 +12,7 @@ local globalStartPos = {x = 0, y = 0, z = 0}
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "T"
+VERSION = "J"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -63,7 +63,7 @@ local function draw()
     local w, h = mon.getSize()
     local squareSize = 1
     local scaleCalc = (math.floor(math.min(math.max((zoomFactor / 0.1) - 0.5,0.5),5)))
-    mon.setTextScale(scaleCalc)
+    --mon.setTextScale(0.5)
 
     for i, trail in ipairs(trails) do
         local color = gradientShades[math.max(math.min(math.floor(((math.min(math.abs(trail.y),1) / 16) * 3) + 1),1),4)]
@@ -104,7 +104,7 @@ local function draw()
 
     mon.setBackgroundColor(colors.black)
     mon.setTextColor(colors.white)
-    mon.setTextScale(0.5)
+    --mon.setTextScale(0.5)
     mon.setCursorPos(2, 1)
     mon.write("-= Aub Turtle HQ (version "..VERSION..") =-")
     lineGoal = 4
