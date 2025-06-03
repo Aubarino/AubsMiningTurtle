@@ -13,7 +13,9 @@ rednet.open("back")
 local input = ""
 local lineGoal = 1
 local symbolRepeat = 1
-VERSION = "U"
+local trailLimit = 2048
+local rgbSlideVal = 1
+VERSION = "K1"
 
 local function loadFromDisk()
     if fs.exists("disk/data.lua") then
@@ -24,6 +26,7 @@ local function loadFromDisk()
             turtles = data.turtles or {}
             trails = data.trails or {}
             trailIdToSet = data.trailIdToSet or 0
+            globalStartPos = data.globalStartPos or {x = 0, y = 0, z = 0}
         end
     end
 end
@@ -34,6 +37,7 @@ local function saveToDisk()
         turtles = turtles,
         trails = trails,
         trailIdToSet = trailIdToSet
+        globalStartPos = globalStartPos
     }))
     f.close()
 end
@@ -125,12 +129,15 @@ local function draw()
     end
 
     mon.setBackgroundColor(colors.black)
-    mon.setTextColor(colors.white)
+    mon.setTextColor(gradientColors[rgbSlideVal])
+    rgbSlideVal = rgbSlideVal + 1
+    if (rgbSlideVal > #gradientColors) rgbSlideVal = 1
     mon.setCursorPos(2, 1)
     symbolRepeat = symbolRepeat + 1
     if symbolRepeat > #turtSymbols then symbolRepeat = 1 end
     mon.write("-="..turtSymbols[symbolRepeat].." Aub Turtle HQ (version "..VERSION..") "..turtSymbols[symbolRepeat].."=-")
     lineGoal = 4
+    mon.setTextColor(colors.white)
 
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
@@ -163,7 +170,7 @@ local function listenForTurtles()
                 z = (message.glZ + message.z - globalStartPos.z)
             }
             trailIdToSet = trailIdToSet + 1
-            if trailIdToSet > 256 then trailIdToSet = 0 end
+            if trailIdToSet > trailLimit then trailIdToSet = 0 end
         end
         draw()
         saveTimer = saveTimer + 1
