@@ -18,7 +18,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2e9")
+print("Aub turtle miner || version 2b1")
 print("===============================")
 local skipReadBoot = false
 
@@ -28,23 +28,28 @@ function readDiskData()
         if item and string.find(string.lower(item.name), "disk") then
             turtle.select(slot)
 
-            -- Check if disk is mounted
-            if fs.exists("disk/data.lua") then
-                local f = fs.open("disk/data.lua", "r")
-                local data = textutils.unserialize(f.readAll())
-                f.close()
+            -- Check all mounted paths to find "disk", "disk1", etc.
+            for _, mount in ipairs(fs.list("/")) do
+                if string.sub(mount, 1, 4) == "disk" then
+                    local path = mount .. "/data.lua"
+                    if fs.exists(path) then
+                        local f = fs.open(path, "r")
+                        local data = textutils.unserialize(f.readAll())
+                        f.close()
 
-                if data and data.turtNumber then  
-                    turtNumber = data.turtNumber
-                    id = data.id
-                    globalStartPos = data.globalStartPos
-                    pos = data.pos
-                    skipReadBoot = true
-                else
-                    print("No valid data found on disk.")
+                        if data and data.turtNumber then
+                            turtNumber = data.turtNumber
+                            id = data.id
+                            globalStartPos = data.globalStartPos
+                            pos = data.pos
+                            skipReadBoot = true
+                            print("Data loaded from "..path)
+                            return
+                        else
+                            print("Invalid data on disk at "..path)
+                        end
+                    end
                 end
-            else
-                print("No data file found on disk.")
             end
         end
     end
@@ -56,13 +61,23 @@ function writeDiskData()
         if item and string.find(string.lower(item.name), "disk") then
             turtle.select(slot)
 
-            if fs.exists("disk/data.lua") then
-                local f = fs.open(path, "w")
-                f.write(textutils.serialize({ globalStartPos = globalStartPos, turtNumber = turtNumber, id = id, pos = pos }))
-                f.close()
-            else
-                print("No disk.")
+            for _, mount in ipairs(fs.list("/")) do
+                if string.sub(mount, 1, 4) == "disk" then
+                    local path = mount .. "/data.lua"
+                    local f = fs.open(path, "w")
+                    f.write(textutils.serialize({
+                        globalStartPos = globalStartPos,
+                        turtNumber = turtNumber,
+                        id = id,
+                        pos = pos
+                    }))
+                    f.close()
+                    print("Data written to "..path)
+                    return
+                end
             end
+
+            print("No mounted disk found.")
         end
     end
 end
