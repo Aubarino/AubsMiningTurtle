@@ -1,7 +1,7 @@
 -- Position and direction tracking
 local pos = { x = 0, y = 0, z = 0 }
 local truePos = { x = 0, y = 0, z = 0 }
-local globalStartPos = { x = 0, y = 0, z = 0 }
+local globalStartPos
 local dir = 0 -- 0=north, 1=east, 2=south, 3=west
 local maxDistance = 16
 local downOffset = 16
@@ -19,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b10")
+print("Aub turtle miner || version 2b11")
 print("===============================")
 local skipReadBoot = false
 
@@ -251,23 +251,46 @@ function calibrateDirection()
     end
 end
 
-local function syncPos(doPrint)
-    local x, y, z = gps.locate(5)  -- 5-second timeout
-    if x then
-        truePos.x = x
-        truePos.y = y
-        truePos.z = z
-        pos = {x = truePos.x - globalStartPos.x,y = truePos.y - globalStartPos.y,z = truePos.z - globalStartPos.z}
-        if (doPrint) then print(string.format("pos synced: (%.1f, %.1f, %.1f)", truePos.x, truePos.y, truePos.z)) end
-        if (doPrint) then print(string.format("predicted pos : (%.1f, %.1f, %.1f)", pos.x, pos.y, pos.z)) end
+function syncPos()
+    local x, y, z = gps.locate(1)
+    if x and y and z then
+        truePos = { x = x, y = y, z = z }
+
+        if not globalStartPos then
+            globalStartPos = {
+                x = truePos.x,
+                y = truePos.y,
+                z = truePos.z
+            }
+            print("Setting globalStartPos to: ", textutils.serialize(globalStartPos))
+            writeDiskData()  -- Save it so it's persistent
+        end
+
+        pos = {
+            x = truePos.x - globalStartPos.x,
+            y = truePos.y - globalStartPos.y,
+            z = truePos.z - globalStartPos.z
+        }
+
         return true
-    else
-        if (doPrint) then print("failed to GPS.") end
-        return false
     end
+
+    return false
 end
 
 readDiskData()
+
+if not globalStartPos then
+    -- First run or no save file, sync with GPS
+    print("First-time setup: syncing with GPS...")
+    if not syncPos() then
+        print("GPS sync failed, please move to GPS-covered area.")
+        return
+    end
+else
+    -- Regular startup, just get updated truePos and pos
+    syncPos()
+end
 
 if (skipReadBoot) then
     print("Starting data from disk, pos: "..table.concat(pos, ", "))
@@ -302,11 +325,6 @@ if not calibrateDirection() then
 end
 if not syncPos(true) then
     print("Warning: GPS sync failed")
-else
-    if not skipReadBoot then
-        globalStartPos = truePos
-        writeDiskData()
-    end
 end
 syncPos(true)
 
