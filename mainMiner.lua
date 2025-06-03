@@ -19,7 +19,7 @@ local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
-print("Aub turtle miner || version 2b6")
+print("Aub turtle miner || version 2b7")
 print("===============================")
 local skipReadBoot = false
 
@@ -155,16 +155,17 @@ function writeDiskData()
     turtle.select(originalSlot)
 end
 
-function syncPos()
+local function syncPos(doPrint)
     local x, y, z = gps.locate(5)  -- 5-second timeout
     if x then
         truePos.x = x
         truePos.y = y
         truePos.z = z
-        print(string.format("pos synced: (%.1f, %.1f, %.1f)", x, y, z))
+        pos = {x = truePos.x - globalStartPos.x,y = truePos.y - globalStartPos.y,z = truePos.z - globalStartPos.z}
+        if (doPrint) then print(string.format("pos synced: (%.1f, %.1f, %.1f)", x, y, z)) end
         return true
     else
-        print("failed to GPS.")
+        if (doPrint) then print("failed to GPS.") end
         return false
     end
 end
@@ -199,7 +200,7 @@ end
 
 pos = {x = 0, y = 0, z = 0} -- relative position from globalStartPos
 
-if not syncPos() then
+if not syncPos(true) then
     print("Warning: GPS sync failed")
 end
 
@@ -216,6 +217,7 @@ local function sendPosition(progressStatus)
         glZ = globalStartPos.z,
         status = progressStatus
     }, "turtlePosData")
+    syncPos(false)
 end
 
 local function clamp(val, lower, upper)
@@ -535,6 +537,7 @@ end
 local function returnToOrigin()
     print("Returning to origin...")
     status = "Returning"
+    syncPos(true)
 
     while (pos.x ~= 0 or pos.y ~= 0 or pos.z ~= 0) do
         while pos.x ~= 0 do
@@ -561,6 +564,7 @@ local function returnToOrigin()
                 break
             end
         end
+        syncPos(true)
     end
 
     faceNorth()
