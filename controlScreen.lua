@@ -12,7 +12,8 @@ local globalStartPos = {x = 0, y = 0, z = 0}
 rednet.open("back")
 local input = ""
 local lineGoal = 1
-VERSION = "K"
+local symbolRepeat = 1
+VERSION = "L"
 
 local gradientColors = {
     colors.red, colors.orange, colors.yellow, colors.lime,
@@ -20,6 +21,9 @@ local gradientColors = {
 }
 local gradientShades = {
     colors.white, colors.lightGray, colors.lightGray, colors.gray
+}
+local turtSymbols = {
+    string.char(1),string.char(165),string.char(2),string.char(3),string.char(4),string.char(5),string.char(6),string.char(7),string.char(8),string.char(11),string.char(12),string.char(14),string.char(15),string.char(21),string.char(23),string.char(169)
 }
 
 -- Monitor setup
@@ -88,6 +92,7 @@ local function draw()
     for i, id in ipairs(sortedIDs) do
         local turt = turtles[id]
         local color = gradientColors[math.floor((i - 1) % #gradientColors) + 1]
+        local turtSymbol = turtSymbols[math.floor((i - 1) % #turtSymbols) + 1]
 
         local relX = (turt.glX + turt.x - globalStartPos.x) * zoomFactor
         local relZ = (turt.glZ + turt.z - globalStartPos.z) * zoomFactor
@@ -96,17 +101,17 @@ local function draw()
 
         mon.setBackgroundColor(colors.black)
         mon.setTextColor(color)
-        for y = 0, squareSize - 1 do
-            mon.setCursorPos(startX, startY + y)
-            mon.write(string.rep(string.char(143), squareSize))
-        end
+        mon.setCursorPos(startX, startY)
+        mon.write(turtSymbol)
     end
 
     mon.setBackgroundColor(colors.black)
     mon.setTextColor(colors.white)
     --mon.setTextScale(0.5)
     mon.setCursorPos(2, 1)
-    mon.write("-= Aub Turtle HQ (version "..VERSION..") =-")
+    symbolRepeat = symbolRepeat + 1
+    if symbolRepeat > #turtSymbols then symbolRepeat = 1 end
+    mon.write("-="..turtSymbols[symbolRepeat].." Aub Turtle HQ (version "..VERSION..") "..turtSymbols[symbolRepeat].."=-")
     lineGoal = 4
 
     for i, id in ipairs(sortedIDs) do
@@ -118,7 +123,7 @@ local function draw()
         local color = gradientColors[((i - 1) % #gradientColors) + 1]
         mon.setCursorPos(1, lineGoal)
         mon.setBackgroundColor(color)
-        mon.write(id .. ":X=" .. relX .. "Y=" .. relY .. "Z=" .. relZ .. "|" .. (turt.status or ""))
+        mon.write(id.."("..turtSymbols[i]..")".."[" .. relX .. "X," .. relY .. "Y," .. relZ .. "Z] " .. (turt.status or ""))
         lineGoal = lineGoal + 1
     end
 
