@@ -183,7 +183,8 @@ function calibrateDirection()
 
     local canCalib = false
     -- Try to move forward
-    if (not rawIsUnbreakable(turtle.inspect())) then
+    local ok, data = turtle.inspect()
+    if (not rawIsUnbreakable(data)) then
         turtle.dig()
         if not turtle.forward() then
             print("Unable to move forward for calibration.")
@@ -193,7 +194,8 @@ function calibrateDirection()
     else
         turnRight()
         turnRight()
-        if (rawIsUnbreakable(turtle.inspect())) then
+        ok, data = turtle.inspect()
+        if (rawIsUnbreakable(data)) then
             print("blocked from calibration!")
         else
             turtle.dig()
