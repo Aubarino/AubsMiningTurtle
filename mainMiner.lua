@@ -14,6 +14,7 @@ local doItAgain = false
 
 local forceReturn = false
 local forceMineDeep = false
+local lastOre = "nil"
 
 local oreCheckTimer = 0
 print("===============================")
@@ -208,6 +209,7 @@ function detectNearbyOreWorld(doBack)
             local nameLower = string.lower(data.name)
             if string.find(nameLower, "ore") or string.find(nameLower, "magnetite") then
                 print("Found ore block at world direction:", check.vec.x, check.vec.y or 0, check.vec.z)
+                lastOre = nameLower
                 return check.vec
             end
         end
@@ -360,7 +362,7 @@ local function mineOreAttempt()
                 outDir = detectNearbyOreWorld(true)
                 if (outDir.x == 0 and outDir.y == 0 and outDir.z == 0) then break end
                 moveOrMineVecAvoid(outDir)
-                sendPosition("Mining Ore Vein!")
+                sendPosition("Mining Ore Vein! "..lastOre)
             end
         end
         oreCheckTimer = 0
