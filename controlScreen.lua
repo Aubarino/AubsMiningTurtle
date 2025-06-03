@@ -36,7 +36,7 @@ local function saveToDisk()
     f.write(textutils.serialize({
         turtles = turtles,
         trails = trails,
-        trailIdToSet = trailIdToSet
+        trailIdToSet = trailIdToSet,
         globalStartPos = globalStartPos
     }))
     f.close()
@@ -68,20 +68,22 @@ if not mon then
     return
 end
 
-print("Enter average turtle origin pos : x y z")
-local input = read()
+if (globalStartPos.x == 0 and globalStartPos.y == 0 and globalStartPos.z == 0) then
+    print("Enter average turtle origin pos : x y z")
+    local input = read()
 
--- Split input string into x, y, z
-local xStr, yStr, zStr = input:match("^(%-?%d+)%s+(%-?%d+)%s+(%-?%d+)$")
-if not xStr then
-    print("Invalid input. Please enter three space-separated numbers.")
-    return
+    -- Split input string into x, y, z
+    local xStr, yStr, zStr = input:match("^(%-?%d+)%s+(%-?%d+)%s+(%-?%d+)$")
+    if not xStr then
+        print("Invalid input. Please enter three space-separated numbers.")
+        return
+    end
+    globalStartPos = {
+        x = tonumber(xStr),
+        y = tonumber(yStr),
+        z = tonumber(zStr)
+    }
 end
-globalStartPos = {
-    x = tonumber(xStr),
-    y = tonumber(yStr),
-    z = tonumber(zStr)
-}
 
 local function draw()
     mon.clear()
