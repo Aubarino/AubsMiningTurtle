@@ -18,12 +18,12 @@ while true do
         local now = os.clock()
 
         if now >= nextTrain3Time then
-            trainSpeaker.playSound("create:train3", 0.3, 1)
+            trainSpeaker.playSound("create:train3", 1.3, 1)
             nextTrain3Time = now + train3Interval
         end
 
         if now >= nextLockingWarningTime then
-            lockingSpeaker.playSound("superbwarfare:locking_warning", 5, 0.5)
+            lockingSpeaker.playSound("superbwarfare:locking_warning", 4, 1)
             nextLockingWarningTime = now + lockingWarningInterval
         end
         sleep(0.025)
