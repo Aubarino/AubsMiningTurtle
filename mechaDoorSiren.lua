@@ -4,26 +4,30 @@ if not speaker then
     return
 end
 
-local side = "right" -- the side redstone input comes from
-local playing = false
+local inputSide = "right"
 
--- Siren pattern function
-local function playSiren()
-    while redstone.getInput(side) do
-        -- First beep
-        speaker.playSound("create:train3", 3, 1)
-        sleep(2)
-    end
-end
+local train3Interval = 2.5
+local lockingWarningInterval = 0.2
+local nextTrain3Time = os.clock()
+local nextLockingWarningTime = os.clock()
 
--- Main loop
 while true do
-    if redstone.getInput(side) and not playing then
-        playing = true
-        print("Alarm triggered!")
-        playSiren()
-        playing = false
-        print("Alarm off.")
+    if redstone.getInput(inputSide) then
+        local now = os.clock()
+
+        if now >= nextTrain3Time then
+            speaker.playSound("create:train3", 3, 1)
+            nextTrain3Time = now + train3Interval
+        end
+
+        if now >= nextLockingWarningTime then
+            speaker.playSound("superbwarfare:locking_warning", 4, 0.5)
+            nextLockingWarningTime = now + lockingWarningInterval
+        end
+    else
+        nextTrain3Time = os.clock()
+        nextLockingWarningTime = os.clock()
     end
-    sleep(0.25)
+
+    sleep(0.1)
 end
